@@ -10,6 +10,8 @@
 
 A clean, data-rich dashboard for the MFKIN Analyser backend. Think of it as a market command center: sector insights, fund rankings, and high-signal metrics in one glance. Built for speed, clarity, and a little bit of swagger.
 
+<img width="1063" height="1763" alt="Screenshot 2026-01-11 at 11 46 51 PM" src="https://github.com/user-attachments/assets/7ef9d2b6-bad7-43c8-9208-c5a222518cfd" />
+
 ## Highlights
 
 - Sector-first discovery with ranked fund lists and time-window toggles (1Y / 3Y / 5Y)
