@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+printf "Running tests with coverage...\n"
+
+npm run test:coverage

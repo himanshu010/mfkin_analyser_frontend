@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // API base URL from environment or default to localhost
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const getApiBase = (envBase) => envBase || 'http://localhost:3000';
+export const API_BASE = getApiBase(import.meta.env.VITE_API_BASE_URL);
 
 // Axios instance with 2 minute timeout for large sector queries
 const api = axios.create({

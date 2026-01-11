@@ -36,7 +36,7 @@ const formatAum = (value) => {
 };
 
 // Format value as percentage
-const formatPercent = (value) => {
+export const formatPercent = (value) => {
   if (value === null || value === undefined) return '—';
   return `${Number(value).toFixed(2)}%`;
 };
@@ -77,13 +77,13 @@ const columns = [
     sortable: true,
     sticky: true,
     cellClass: 'ranking-table__cell--aum',
-    accessor: (row) => row.metrics?.aum,
+    accessorKey: 'aum',
   },
   {
     id: 'isActive',
     label: 'Status',
     align: 'center',
-    sortable: true,
+    sortable: false,
     cellClass: 'ranking-table__cell--status',
   },
   {
@@ -92,7 +92,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--expense',
-    accessor: (row) => row.metrics?.expenseRatio,
+    accessorKey: 'expenseRatio',
   },
   {
     id: 'category',
@@ -100,7 +100,7 @@ const columns = [
     align: 'center',
     sortable: true,
     cellClass: 'ranking-table__cell--category',
-    accessor: (row) => row.metrics?.category,
+    accessorKey: 'category',
   },
   {
     id: 'peRatio',
@@ -108,7 +108,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--pe',
-    accessor: (row) => row.metrics?.peRatio,
+    accessorKey: 'peRatio',
   },
   {
     id: 'pbRatio',
@@ -116,7 +116,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--pb',
-    accessor: (row) => row.metrics?.pbRatio,
+    accessorKey: 'pbRatio',
   },
   {
     id: 'dividendYield',
@@ -124,7 +124,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--dividend',
-    accessor: (row) => row.metrics?.dividendYield,
+    accessorKey: 'dividendYield',
   },
   {
     id: 'turnoverRatio',
@@ -132,7 +132,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--turnover',
-    accessor: (row) => row.metrics?.turnoverRatio,
+    accessorKey: 'turnoverRatio',
   },
   {
     id: 'sharpeRatio',
@@ -140,7 +140,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--sharpe',
-    accessor: (row) => row.metrics?.sharpeRatio,
+    accessorKey: 'sharpeRatio',
   },
   {
     id: 'alpha',
@@ -148,7 +148,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--alpha',
-    accessor: (row) => row.metrics?.alpha,
+    accessorKey: 'alpha',
   },
   {
     id: 'beta',
@@ -156,7 +156,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--beta',
-    accessor: (row) => row.metrics?.beta,
+    accessorKey: 'beta',
   },
   {
     id: 'stdDev',
@@ -164,7 +164,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--stddev',
-    accessor: (row) => row.metrics?.standardDeviation,
+    accessorKey: 'standardDeviation',
   },
   {
     id: 'sortinoRatio',
@@ -172,7 +172,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--sortino',
-    accessor: (row) => row.metrics?.sortinoRatio,
+    accessorKey: 'sortinoRatio',
   },
   {
     id: 'treynorRatio',
@@ -180,7 +180,7 @@ const columns = [
     align: 'right',
     sortable: true,
     cellClass: 'ranking-table__cell--treynor',
-    accessor: (row) => row.metrics?.treynorRatio,
+    accessorKey: 'treynorRatio',
   },
   {
     id: 'riskRating',
@@ -188,7 +188,7 @@ const columns = [
     align: 'center',
     sortable: true,
     cellClass: 'ranking-table__cell--risk',
-    accessor: (row) => row.metrics?.riskRating,
+    accessorKey: 'riskRating',
   },
   {
     id: 'inceptionDate',
@@ -196,19 +196,21 @@ const columns = [
     align: 'center',
     sortable: true,
     cellClass: 'ranking-table__cell--inception',
-    accessor: (row) => row.metrics?.inceptionDate,
+    accessorKey: 'inceptionDate',
   },
 ];
 
 // Get sortable value from row using column accessor or direct property
 const getSortValue = (row, columnId) => {
   const column = columns.find((c) => c.id === columnId);
-  if (column?.accessor) return column.accessor(row);
+  if (column?.accessorKey) {
+    return row.metrics?.[column.accessorKey];
+  }
   return row[columnId];
 };
 
 // Comparator for descending sort order, handles null values
-const descendingComparator = (a, b, orderBy) => {
+export const descendingComparator = (a, b, orderBy) => {
   const aVal = getSortValue(a, orderBy);
   const bVal = getSortValue(b, orderBy);
   if (aVal == null && bVal == null) return 0;
@@ -234,6 +236,13 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
 
   const safeRows = useMemo(() => rows || [], [rows]);
   const usePagination = safeRows.length > PAGINATION_THRESHOLD;
+
+  const handlePageChange = (_, nextPage) => setPage(nextPage);
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   // Toggle sort order or change sort column
   const handleSort = (columnId) => {
@@ -289,12 +298,9 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
           component="div"
           count={safeRows.length}
           page={page}
-          onPageChange={(_, p) => setPage(p)}
+          onPageChange={handlePageChange}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
+          onRowsPerPageChange={handleRowsPerPageChange}
           rowsPerPageOptions={[50, 100, 250, 500]}
           className="ranking-table__pagination"
         />
@@ -455,12 +461,9 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
           component="div"
           count={safeRows.length}
           page={page}
-          onPageChange={(_, p) => setPage(p)}
+          onPageChange={handlePageChange}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
+          onRowsPerPageChange={handleRowsPerPageChange}
           rowsPerPageOptions={[50, 100, 250, 500]}
         />
       )}
