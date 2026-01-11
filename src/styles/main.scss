@@ -1,0 +1,39 @@
+// Main entry point for all styles
+@use 'variables' as *;
+@use 'animations';
+
+// Component styles
+@use 'components/RankingTable';
+@use 'components/TopFundsPanel';
+@use 'components/AppPreloader';
+@use 'App';
+
+// Global styles
+body {
+  background-color: $bg-default;
+  font-family: $font-body;
+  color: $text-primary;
+}
+
+// Utility classes
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-bold {
+  font-weight: 600;
+}

@@ -1,0 +1,74 @@
+@use '../variables' as *;
+
+.top-funds-panel {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  @media (min-width: 900px) {
+    flex-direction: row;
+  }
+}
+
+.top-funds-card {
+  &.MuiPaper-root {
+    flex: 1;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  &--one-year.MuiPaper-root {
+    background: $gradient-gold !important;
+    box-shadow: $shadow-glow-gold !important;
+  }
+
+  &--three-year.MuiPaper-root {
+    background: $gradient-silver !important;
+    box-shadow: $shadow-glow-silver !important;
+  }
+
+  &--five-year.MuiPaper-root {
+    background: $gradient-ice !important;
+    box-shadow: $shadow-glow-ice !important;
+  }
+
+  &--active.MuiPaper-root {
+    border: $border-strong !important;
+  }
+
+  &--inactive.MuiPaper-root {
+    border: $border-medium !important;
+  }
+}
+
+.top-funds-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.top-funds-card__name {
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.top-funds-card__return {
+  flex-shrink: 0;
+}
+
+.top-funds-card__aum-label {
+  min-width: 0;
+}
+
+.top-funds-card__aum-value {
+  white-space: nowrap;
+}
+
+.top-funds-card__tied {
+  margin-top: $spacing-sm;
+}

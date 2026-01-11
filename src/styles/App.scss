@@ -1,0 +1,192 @@
+@use 'variables' as *;
+
+// Main app container
+.app {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #f9e6d7 0%, #f6f1ec 45%, #ecf0ef 100%);
+}
+
+// Header
+.app-header {
+  background: transparent;
+}
+
+.app-header__container {
+  padding: $spacing-md 0;
+}
+
+.app-header__paper {
+  padding: $spacing-sm + 2;
+  backdrop-filter: blur(14px);
+}
+
+.app-header__logo {
+  background-color: #fde1c1;
+  color: $color-primary;
+  width: 48px;
+  height: 48px;
+}
+
+.app-header__search-field {
+  min-width: 280px;
+}
+
+.app-header__refresh-btn {
+  border: 1px solid rgba($color-primary, 0.12);
+}
+
+// Content container
+.app-content {
+  padding: $spacing-md 0;
+}
+
+// Sector selector panel
+.sector-panel {
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  animation: floatIn 0.6s ease;
+  animation-fill-mode: both;
+}
+
+.sector-panel__header {
+  margin-bottom: $spacing-md;
+}
+
+.sector-panel__title {
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.sector-panel__search {
+  width: 150px;
+}
+
+.sector-panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.sector-chip {
+  font-weight: 400;
+  background-color: transparent;
+
+  &:hover {
+    background-color: rgba($color-primary, 0.1);
+  }
+
+  &--selected {
+    font-weight: 600;
+    background-color: rgba($color-primary, 0.15);
+  }
+}
+
+// Stats panel
+.stats-panel {
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  animation: floatIn 0.6s ease;
+  animation-delay: 0.05s;
+  animation-fill-mode: both;
+}
+
+.stats-panel__info {
+  flex: 1;
+}
+
+.filter-field {
+  width: 160px;
+}
+
+// Loading panel
+.loading-panel {
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.loading-panel__progress {
+  height: 10px;
+  border-radius: $border-radius-pill;
+}
+
+// Phase indicator dots
+.phase-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+
+  &--active {
+    background-color: $color-primary;
+  }
+
+  &--complete {
+    background-color: $color-success;
+  }
+
+  &--pending {
+    background-color: $color-muted;
+  }
+}
+
+// Partial loading banner
+.partial-loading {
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  background-color: $color-info-light;
+}
+
+.partial-loading__progress {
+  flex: 1;
+  height: 6px;
+  border-radius: $border-radius-sm;
+}
+
+// Insights grid
+.insights-grid {
+  margin-bottom: $spacing-md;
+}
+
+// AUM and Expense panels
+.insights-panel {
+  padding: $spacing-md;
+}
+
+.insights-panel__title {
+  margin-bottom: $spacing-sm + 2;
+}
+
+.fund-row__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Fund details panel
+.fund-details {
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.fund-details__info {
+  flex: 1;
+}
+
+.fund-loading {
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.fund-loading__title {
+  margin-bottom: $spacing-xs;
+}
+
+// Ranking table container
+.ranking-container {
+  width: 100%;
+  padding: 0 $spacing-md;
+  padding-bottom: $spacing-xl;
+  animation: floatIn 0.6s ease;
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+}

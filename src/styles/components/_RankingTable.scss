@@ -1,0 +1,264 @@
+@use '../variables' as *;
+
+.ranking-table {
+  width: 100%;
+  padding: 0;
+}
+
+.ranking-table__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm $spacing-md;
+}
+
+.ranking-table__container {
+  width: 100%;
+
+  &--paginated {
+    max-height: calc(100vh - 350px);
+  }
+
+  &--full {
+    max-height: calc(100vh - 200px);
+  }
+}
+
+.ranking-table__table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.ranking-table__head {
+  th {
+    background-color: $bg-table-header !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: $spacing-sm $spacing-xs;
+    white-space: nowrap;
+  }
+}
+
+.ranking-table__cell {
+  padding: 6px $spacing-xs;
+  font-size: 0.8rem;
+
+  &--sortable {
+    cursor: pointer;
+  }
+
+  &--sticky {
+    position: sticky !important;
+    z-index: $z-sticky-header !important;
+    background-color: $bg-table-header !important;
+  }
+
+  &--rank {
+    width: $table-col-rank;
+    min-width: $table-col-rank;
+    left: 0;
+    text-align: center;
+  }
+
+  &--name {
+    width: $table-col-name;
+    min-width: $table-col-name;
+    left: $table-col-rank;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &--return {
+    width: $table-col-return;
+    min-width: $table-col-return;
+    left: calc(#{$table-col-rank} + #{$table-col-name});
+    text-align: right;
+    font-weight: 600;
+  }
+
+  &--aum {
+    width: $table-col-aum;
+    min-width: $table-col-aum;
+    left: calc(#{$table-col-rank} + #{$table-col-name} + #{$table-col-return});
+    text-align: right;
+    border-right: $border-divider !important;
+  }
+
+  &--status {
+    width: $table-col-status;
+    text-align: center;
+  }
+
+  &--expense {
+    width: $table-col-standard;
+    text-align: right;
+  }
+
+  &--category {
+    width: $table-col-standard;
+    text-align: center;
+  }
+
+  &--pe,
+  &--pb,
+  &--beta {
+    width: $table-col-small;
+    text-align: right;
+  }
+
+  &--dividend,
+  &--sharpe,
+  &--sortino {
+    width: $table-col-medium;
+    text-align: right;
+  }
+
+  &--turnover,
+  &--stddev,
+  &--treynor {
+    width: $table-col-medium;
+    text-align: right;
+  }
+
+  &--alpha {
+    width: 75px;
+    text-align: right;
+  }
+
+  &--risk {
+    width: $table-col-large;
+    text-align: center;
+  }
+
+  &--inception {
+    width: 100px;
+    text-align: center;
+  }
+}
+
+.ranking-table__row {
+  &:hover {
+    background-color: rgba($color-primary, 0.06) !important;
+  }
+
+  &--top-rank {
+    background-color: $bg-top-rank !important;
+  }
+
+  td {
+    padding: 6px $spacing-xs;
+    font-size: 0.8rem;
+  }
+}
+
+.ranking-table__body-cell {
+  &--sticky {
+    position: sticky !important;
+    z-index: $z-sticky !important;
+  }
+
+  &--rank {
+    left: 0;
+  }
+
+  &--name {
+    left: $table-col-rank;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &--return {
+    left: calc(#{$table-col-rank} + #{$table-col-name});
+    font-weight: 600 !important;
+  }
+
+  &--aum {
+    left: calc(#{$table-col-rank} + #{$table-col-name} + #{$table-col-return});
+    border-right: $border-divider !important;
+  }
+}
+
+.ranking-table__bg {
+  &--white {
+    background-color: #fff !important;
+  }
+
+  &--top {
+    background-color: #fdf5ee !important;
+  }
+}
+
+.ranking-table__rank-chip {
+  &.MuiChip-root {
+    font-weight: 700 !important;
+    background-color: $color-secondary !important;
+    height: 22px;
+    font-size: 0.75rem;
+  }
+}
+
+.ranking-table__fund-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+}
+
+.ranking-table__fund-manager {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  font-size: 0.7rem !important;
+}
+
+// Return value colors
+.ranking-table__return {
+  &--positive {
+    color: $color-success !important;
+  }
+
+  &--negative {
+    color: $color-error !important;
+  }
+}
+
+// Status chip styles
+.ranking-table__status-chip {
+  &.MuiChip-root {
+    font-size: 0.65rem;
+    height: 20px;
+  }
+
+  &--active.MuiChip-root {
+    background-color: $color-success-light !important;
+    color: $color-success !important;
+  }
+
+  &--inactive.MuiChip-root {
+    background-color: $color-muted !important;
+    color: $text-secondary !important;
+  }
+}
+
+// Alpha value colors
+.ranking-table__alpha {
+  &--positive {
+    color: $color-success !important;
+  }
+
+  &--negative {
+    color: $color-error !important;
+  }
+}
+
+.ranking-table__note {
+  margin-top: $spacing-xs;
+  padding: 0 $spacing-md $spacing-xs;
+  display: block;
+}
+
+.ranking-table__pagination {
+  border-bottom: 1px solid rgba(224, 224, 224, 1);
+}

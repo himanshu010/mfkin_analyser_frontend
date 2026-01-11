@@ -1,0 +1,58 @@
+@use '../variables' as *;
+
+.app-preloader {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gradient-bg;
+  padding: $spacing-lg;
+}
+
+.app-preloader__card {
+  &.MuiPaper-root {
+    padding: $spacing-xl;
+    max-width: 520px;
+    width: 100%;
+  }
+}
+
+.app-preloader__content {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.app-preloader__header {
+  display: flex;
+  flex-direction: row;
+  gap: $spacing-md;
+  align-items: center;
+}
+
+.app-preloader__logo {
+  width: 48px;
+  height: 48px;
+  border-radius: $border-radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gradient-logo;
+  color: $color-primary;
+}
+
+.app-preloader__message {
+  margin-bottom: $spacing-xs;
+}
+
+.app-preloader__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.app-preloader__skeleton-line {
+  height: 10px;
+  border-radius: $border-radius-pill;
+  background: $gradient-skeleton;
+}

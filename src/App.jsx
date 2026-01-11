@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 import {
   AppBar,
   Avatar,
@@ -12,148 +12,155 @@ import {
   IconButton,
   InputAdornment,
   LinearProgress,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Paper,
   Stack,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import ScienceIcon from "@mui/icons-material/Science";
-import MemoryIcon from "@mui/icons-material/Memory";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import ConstructionIcon from "@mui/icons-material/Construction";
-import BoltIcon from "@mui/icons-material/Bolt";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import HomeWorkIcon from "@mui/icons-material/HomeWork";
-import MovieIcon from "@mui/icons-material/Movie";
-import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
-import FactoryIcon from "@mui/icons-material/Factory";
-import ShieldIcon from "@mui/icons-material/Shield";
-import PublicIcon from "@mui/icons-material/Public";
-import SpaIcon from "@mui/icons-material/Spa";
-import TuneIcon from "@mui/icons-material/Tune";
-import InsightsIcon from "@mui/icons-material/Insights";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchSectors, fetchSectorRanking, setActiveSector } from "./features/sectors/sectorSlice.js";
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import ScienceIcon from '@mui/icons-material/Science';
+import MemoryIcon from '@mui/icons-material/Memory';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import BoltIcon from '@mui/icons-material/Bolt';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import MovieIcon from '@mui/icons-material/Movie';
+import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
+import FactoryIcon from '@mui/icons-material/Factory';
+import ShieldIcon from '@mui/icons-material/Shield';
+import PublicIcon from '@mui/icons-material/Public';
+import SpaIcon from '@mui/icons-material/Spa';
+import InsightsIcon from '@mui/icons-material/Insights';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  clearFund,
-  fetchFundDetails,
-  fetchFundSectorRanking,
-} from "./features/funds/fundSlice.js";
-import TopFundsPanel from "./components/TopFundsPanel.jsx";
-import RankingTable from "./components/RankingTable.jsx";
-import AppPreloader from "./components/AppPreloader.jsx";
+  fetchSectors,
+  fetchSectorRanking,
+  setActiveSector,
+} from './features/sectors/sectorSlice.js';
+import { clearFund, fetchFundDetails, fetchFundSectorRanking } from './features/funds/fundSlice.js';
+import TopFundsPanel from './components/TopFundsPanel.jsx';
+import RankingTable from './components/RankingTable.jsx';
+import AppPreloader from './components/AppPreloader.jsx';
 
+// Timeframe options for return calculations
 const timeframes = [
-  { key: "oneYear", label: "1Y" },
-  { key: "threeYear", label: "3Y" },
-  { key: "fiveYear", label: "5Y" },
+  { key: 'oneYear', label: '1Y' },
+  { key: 'threeYear', label: '3Y' },
+  { key: 'fiveYear', label: '5Y' },
 ];
 
+// Fund plan type filters
 const planFilters = [
-  { key: "direct", label: "Direct" },
-  { key: "regular", label: "Regular" },
-  { key: "growth", label: "Growth" },
-  { key: "idcw", label: "IDCW" },
+  { key: 'direct', label: 'Direct' },
+  { key: 'regular', label: 'Regular' },
+  { key: 'growth', label: 'Growth' },
+  { key: 'idcw', label: 'IDCW' },
 ];
 
+// Format return value as percentage with 2 decimal places
 const formatReturn = (value) =>
-  value === null || value === undefined ? "—" : `${value.toFixed(2)}%`;
+  value === null || value === undefined ? '—' : `${value.toFixed(2)}%`;
 
+// Format AUM in Indian notation (Crores)
+// Input is in 10s of crores, so divide by 10 to get crores
 const formatAum = (value) => {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return '—';
   const num = Number(value);
-  if (Number.isNaN(num)) return "—";
+  if (Number.isNaN(num)) return '—';
   const crores = num / 10;
   if (crores >= 1000) return `₹${(crores / 1000).toFixed(1)}K Cr`;
   if (crores >= 100) return `₹${crores.toFixed(0)} Cr`;
   return `₹${crores.toFixed(1)} Cr`;
 };
 
+// Map sector names to appropriate icons based on keywords
 const getSectorIcon = (sector) => {
   const key = sector.toLowerCase();
-  if (key.includes("bank")) return <AccountBalanceIcon />;
-  if (key.includes("pharma") || key.includes("health")) return <ScienceIcon />;
-  if (key.includes("tech")) return <MemoryIcon />;
-  if (key.includes("fmcg") || key.includes("consumer")) return <ShoppingBagIcon />;
-  if (key.includes("infra") || key.includes("construction")) return <ConstructionIcon />;
-  if (key.includes("energy") || key.includes("power")) return <BoltIcon />;
-  if (key.includes("auto")) return <DirectionsCarIcon />;
-  if (key.includes("real")) return <HomeWorkIcon />;
-  if (key.includes("media")) return <MovieIcon />;
-  if (key.includes("telecom")) return <PhoneAndroidIcon />;
-  if (key.includes("manufacturing") || key.includes("industrial")) return <FactoryIcon />;
-  if (key.includes("defense")) return <ShieldIcon />;
-  if (key.includes("global") || key.includes("international")) return <PublicIcon />;
-  if (key.includes("esg") || key.includes("sustain")) return <SpaIcon />;
+  if (key.includes('bank')) return <AccountBalanceIcon />;
+  if (key.includes('pharma') || key.includes('health')) return <ScienceIcon />;
+  if (key.includes('tech')) return <MemoryIcon />;
+  if (key.includes('fmcg') || key.includes('consumer')) return <ShoppingBagIcon />;
+  if (key.includes('infra') || key.includes('construction')) return <ConstructionIcon />;
+  if (key.includes('energy') || key.includes('power')) return <BoltIcon />;
+  if (key.includes('auto')) return <DirectionsCarIcon />;
+  if (key.includes('real')) return <HomeWorkIcon />;
+  if (key.includes('media')) return <MovieIcon />;
+  if (key.includes('telecom')) return <PhoneAndroidIcon />;
+  if (key.includes('manufacturing') || key.includes('industrial')) return <FactoryIcon />;
+  if (key.includes('defense')) return <ShieldIcon />;
+  if (key.includes('global') || key.includes('international')) return <PublicIcon />;
+  if (key.includes('esg') || key.includes('sustain')) return <SpaIcon />;
   return <DashboardCustomizeIcon />;
 };
 
 const App = () => {
   const dispatch = useDispatch();
-  const { list, listStatus, ranking, rankingStatus } = useSelector(
-    (state) => state.sectors
+  const { list, listStatus, ranking, rankingStatus } = useSelector((state) => state.sectors);
+  const { details, detailsStatus, sectorRanking, sectorRankingStatus } = useSelector(
+    (state) => state.funds
   );
-  const {
-    details,
-    detailsStatus,
-    sectorRanking,
-    sectorRankingStatus,
-  } = useSelector((state) => state.funds);
-  
   const rankingProgress = useSelector((state) => state.sectors.rankingProgress);
 
-  const [selectedSector, setSelectedSector] = useState("");
-  const [sectorSearch, setSectorSearch] = useState("");
-  const [searchMode, setSearchMode] = useState("sector");
-  const [globalSearch, setGlobalSearch] = useState("");
-  const [timeframe, setTimeframe] = useState("oneYear");
-  const [tableFilter, setTableFilter] = useState("");
+  const [selectedSector, setSelectedSector] = useState('');
+  const [sectorSearch, setSectorSearch] = useState('');
+  const [searchMode, setSearchMode] = useState('sector');
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [timeframe, setTimeframe] = useState('oneYear');
+  const [tableFilter, setTableFilter] = useState('');
   const [activePlans, setActivePlans] = useState([]);
-  const [recentSectors, setRecentSectors] = useState([]);
 
+  // Fetch sector list on initial mount
   useEffect(() => {
-    if (listStatus === "idle") {
+    if (listStatus === 'idle') {
       dispatch(fetchSectors());
     }
   }, [dispatch, listStatus]);
 
+  // Default to Technology sector, or first available
+  const defaultSector = useMemo(() => {
+    if (listStatus === 'succeeded' && list.length > 0) {
+      return list.includes('Technology (IT)') ? 'Technology (IT)' : list[0];
+    }
+    return '';
+  }, [listStatus, list]);
+
+  // Auto-select default sector when list loads
   useEffect(() => {
-    if (listStatus === "succeeded" && list.length > 0 && !selectedSector) {
-      // Default to Technology (IT) if available, otherwise first sector
-      const defaultSector = list.includes("Technology (IT)") ? "Technology (IT)" : list[0];
+    if (defaultSector && !selectedSector) {
       setSelectedSector(defaultSector);
       dispatch(setActiveSector(defaultSector));
       dispatch(fetchSectorRanking(defaultSector));
     }
-  }, [dispatch, listStatus, list, selectedSector]);
+  }, [dispatch, defaultSector, selectedSector]);
 
+  // Sync selected sector when fund search returns sector data
+  const fundSector = sectorRanking?.fund?.sector;
   useEffect(() => {
-    if (sectorRanking?.fund?.sector) {
-      setSelectedSector(sectorRanking.fund.sector);
+    if (fundSector) {
+      setSelectedSector(fundSector);
     }
-  }, [sectorRanking]);
+  }, [fundSector]);
 
+  // Handle sector selection from chip click
+  // Sets active sector for SSE priority queue to cancel other pending requests
   const handleSectorSelect = (sector) => {
     setSelectedSector(sector);
-    dispatch(setActiveSector(sector)); // Set active sector for priority queue
+    dispatch(setActiveSector(sector));
     dispatch(clearFund());
     dispatch(fetchSectorRanking(sector));
-    setRecentSectors((prev) => [sector, ...prev.filter((item) => item !== sector)].slice(0, 5));
   };
 
+  // Handle global search by sector name or fund code
   const handleGlobalSearch = () => {
     if (!globalSearch.trim()) return;
-    if (searchMode === "sector") {
+
+    if (searchMode === 'sector') {
       const match = list.find(
         (sector) => sector.toLowerCase() === globalSearch.trim().toLowerCase()
       );
@@ -164,31 +171,40 @@ const App = () => {
       handleSectorSelect(globalSearch.trim());
       return;
     }
+
+    // Fund search mode
     dispatch(clearFund());
     dispatch(fetchFundDetails(globalSearch.trim()));
     dispatch(fetchFundSectorRanking(globalSearch.trim()));
   };
 
+  // Derived state for ranking display
   const activeRanking = sectorRanking?.sectorRanking || ranking;
   const activeSectorName =
-    sectorRanking?.fund?.sector || activeRanking?.sector || selectedSector || "";
-  const isRankingLoading = rankingStatus === "loading" || sectorRankingStatus === "loading";
-  const isPartialLoading = rankingStatus === "partial"; // Active funds shown, inactive still loading
+    sectorRanking?.fund?.sector || activeRanking?.sector || selectedSector || '';
+  const isRankingLoading = rankingStatus === 'loading' || sectorRankingStatus === 'loading';
 
-  const rows = activeRanking?.rankings?.[timeframe] || [];
+  // Partial loading: active funds shown while inactive funds still loading
+  const isPartialLoading = rankingStatus === 'partial';
 
+  const currentRows = useMemo(
+    () => activeRanking?.rankings?.[timeframe] || [],
+    [activeRanking, timeframe]
+  );
+
+  // Filter rows by search text and plan type filters
   const filteredRows = useMemo(() => {
     const search = tableFilter.trim().toLowerCase();
-    return rows.filter((row) => {
-      const name = row.schemeName?.toLowerCase() || "";
+    return currentRows.filter((row) => {
+      const name = row.schemeName?.toLowerCase() || '';
       const matchesSearch = !search || name.includes(search);
       const matchesPlans =
-        activePlans.length === 0 ||
-        activePlans.some((plan) => name.includes(plan));
+        activePlans.length === 0 || activePlans.some((plan) => name.includes(plan));
       return matchesSearch && matchesPlans;
     });
-  }, [rows, tableFilter, activePlans]);
+  }, [currentRows, tableFilter, activePlans]);
 
+  // Top 4 funds by AUM
   const topAumFunds = useMemo(() => {
     return [...filteredRows]
       .filter((row) => row.metrics?.aum)
@@ -196,6 +212,7 @@ const App = () => {
       .slice(0, 4);
   }, [filteredRows]);
 
+  // Top 4 funds with lowest expense ratio
   const lowestExpense = useMemo(() => {
     return [...filteredRows]
       .filter((row) => row.metrics?.expenseRatio != null)
@@ -203,41 +220,11 @@ const App = () => {
       .slice(0, 4);
   }, [filteredRows]);
 
-  const returnSpreadLeaders = useMemo(() => {
-    const oneYear = activeRanking?.rankings?.oneYear || [];
-    const fiveYear = activeRanking?.rankings?.fiveYear || [];
-    const map = new Map();
-    oneYear.forEach((row) => {
-      map.set(row.schemeCode, {
-        schemeCode: row.schemeCode,
-        schemeName: row.schemeName,
-        oneYear: row.returns,
-      });
-    });
-    fiveYear.forEach((row) => {
-      const entry = map.get(row.schemeCode) || {
-        schemeCode: row.schemeCode,
-        schemeName: row.schemeName,
-      };
-      entry.fiveYear = row.returns;
-      map.set(row.schemeCode, entry);
-    });
-    const spreads = [];
-    map.forEach((entry) => {
-      if (typeof entry.oneYear === "number" && typeof entry.fiveYear === "number") {
-        spreads.push({
-          ...entry,
-          spread: Math.abs(entry.oneYear - entry.fiveYear),
-        });
-      }
-    });
-    return spreads.sort((a, b) => b.spread - a.spread).slice(0, 4);
-  }, [activeRanking]);
-
+  // Sector aggregate metrics
   const averageReturn = useMemo(() => {
     const values = filteredRows
       .map((row) => row.returns)
-      .filter((value) => typeof value === "number");
+      .filter((value) => typeof value === 'number');
     if (values.length === 0) return null;
     return values.reduce((sum, value) => sum + value, 0) / values.length;
   }, [filteredRows]);
@@ -245,7 +232,7 @@ const App = () => {
   const averagePe = useMemo(() => {
     const values = filteredRows
       .map((row) => row.metrics?.peRatio)
-      .filter((value) => typeof value === "number");
+      .filter((value) => typeof value === 'number');
     if (values.length === 0) return null;
     return values.reduce((sum, value) => sum + value, 0) / values.length;
   }, [filteredRows]);
@@ -253,51 +240,45 @@ const App = () => {
   const averagePb = useMemo(() => {
     const values = filteredRows
       .map((row) => row.metrics?.pbRatio)
-      .filter((value) => typeof value === "number");
+      .filter((value) => typeof value === 'number');
     if (values.length === 0) return null;
     return values.reduce((sum, value) => sum + value, 0) / values.length;
   }, [filteredRows]);
 
-  const aumCoverage = useMemo(() => {
-    const withAum = filteredRows.filter((row) => row.metrics?.aum != null).length;
-    return filteredRows.length === 0
-      ? 0
-      : Math.round((withAum / filteredRows.length) * 100);
-  }, [filteredRows]);
-
+  // Filtered sector list for sector search
   const sectorList = useMemo(() => {
     const search = sectorSearch.trim().toLowerCase();
     if (!search) return list;
     return list.filter((sector) => sector.toLowerCase().includes(search));
   }, [list, sectorSearch]);
 
-  if (listStatus === "idle" || listStatus === "loading") {
+  if (listStatus === 'idle' || listStatus === 'loading') {
     return <AppPreloader message="Loading sector catalog..." />;
   }
 
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top, #F9E6D7 0%, #F6F1EC 45%, #ECF0EF 100%)",
+        minHeight: '100vh',
+        background: 'radial-gradient(circle at top, #F9E6D7 0%, #F6F1EC 45%, #ECF0EF 100%)',
       }}
     >
-      <AppBar position="sticky" elevation={0} sx={{ background: "transparent" }}>
+      {/* Header */}
+      <AppBar position="sticky" elevation={0} sx={{ background: 'transparent' }}>
         <Container maxWidth="xl" sx={{ py: 2 }}>
-          <Paper sx={{ p: 1.5, backdropFilter: "blur(14px)" }}>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
+          <Paper sx={{ p: 1.5, backdropFilter: 'blur(14px)' }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
               <Stack direction="row" spacing={2} alignItems="center">
                 <Badge
                   overlap="circular"
-                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   badgeContent={<Chip size="small" label="Live" color="success" />}
                 >
                   <Avatar
                     variant="rounded"
                     sx={{
-                      bgcolor: "#FDE1C1",
-                      color: "#1F5460",
+                      bgcolor: '#FDE1C1',
+                      color: '#1F5460',
                       width: 48,
                       height: 48,
                     }}
@@ -313,7 +294,7 @@ const App = () => {
                 </Box>
               </Stack>
               <Box flex={1} />
-              <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems="center">
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems="center">
                 <ToggleButtonGroup
                   value={searchMode}
                   exclusive
@@ -329,7 +310,7 @@ const App = () => {
                   value={globalSearch}
                   onChange={(event) => setGlobalSearch(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter") handleGlobalSearch();
+                    if (event.key === 'Enter') handleGlobalSearch();
                   }}
                   sx={{ minWidth: 280 }}
                   InputProps={{
@@ -361,7 +342,7 @@ const App = () => {
                 </Button>
                 <IconButton
                   onClick={() => selectedSector && handleSectorSelect(selectedSector)}
-                  sx={{ border: "1px solid rgba(31,84,96,0.12)" }}
+                  sx={{ border: '1px solid rgba(31,84,96,0.12)' }}
                 >
                   <RefreshIcon />
                 </IconButton>
@@ -372,13 +353,13 @@ const App = () => {
       </AppBar>
 
       <Container maxWidth="xl" sx={{ py: 2 }}>
-        {/* Sector Selector - Horizontal Scrollable */}
+        {/* Sector Selector */}
         <Paper
           sx={{
             p: 2,
             mb: 2,
-            animation: "floatIn 0.6s ease",
-            animationFillMode: "both",
+            animation: 'floatIn 0.6s ease',
+            animationFillMode: 'both',
           }}
         >
           <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -402,8 +383,8 @@ const App = () => {
           </Stack>
           <Box
             sx={{
-              display: "flex",
-              flexWrap: "wrap",
+              display: 'flex',
+              flexWrap: 'wrap',
               gap: 1,
             }}
           >
@@ -413,12 +394,12 @@ const App = () => {
                 icon={getSectorIcon(sector)}
                 label={sector}
                 onClick={() => handleSectorSelect(sector)}
-                variant={sector === selectedSector ? "filled" : "outlined"}
+                variant={sector === selectedSector ? 'filled' : 'outlined'}
                 sx={{
                   fontWeight: sector === selectedSector ? 600 : 400,
-                  bgcolor: sector === selectedSector ? "rgba(31,84,96,0.15)" : "transparent",
-                  "&:hover": {
-                    bgcolor: "rgba(31,84,96,0.1)",
+                  bgcolor: sector === selectedSector ? 'rgba(31,84,96,0.15)' : 'transparent',
+                  '&:hover': {
+                    bgcolor: 'rgba(31,84,96,0.1)',
                   },
                 }}
               />
@@ -426,37 +407,43 @@ const App = () => {
           </Box>
         </Paper>
 
-        {/* Sector Stats & Filters Row */}
+        {/* Sector Stats & Filters */}
         <Paper
           sx={{
             p: 2,
             mb: 2,
-            animation: "floatIn 0.6s ease",
-            animationDelay: "0.05s",
-            animationFillMode: "both",
+            animation: 'floatIn 0.6s ease',
+            animationDelay: '0.05s',
+            animationFillMode: 'both',
           }}
         >
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
             <Box flex={1}>
-              <Typography variant="h1">{activeSectorName || "Select a sector"}</Typography>
+              <Typography variant="h1">{activeSectorName || 'Select a sector'}</Typography>
               <Typography variant="body2" color="text.secondary">
                 {activeRanking?.generatedAt
                   ? `Last refreshed ${new Date(activeRanking.generatedAt).toLocaleString()}`
-                  : "Select a sector above to see rankings"}
+                  : 'Select a sector above to see rankings'}
               </Typography>
             </Box>
             <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center" useFlexGap>
               <Chip label={`${activeRanking?.totalFunds ?? 0} funds`} size="small" />
               <Chip label={`Avg: ${formatReturn(averageReturn)}`} size="small" />
-              <Chip label={`P/E: ${averagePe === null ? "—" : averagePe.toFixed(1)}`} size="small" />
-              <Chip label={`P/B: ${averagePb === null ? "—" : averagePb.toFixed(1)}`} size="small" />
+              <Chip
+                label={`P/E: ${averagePe === null ? '—' : averagePe.toFixed(1)}`}
+                size="small"
+              />
+              <Chip
+                label={`P/B: ${averagePb === null ? '—' : averagePb.toFixed(1)}`}
+                size="small"
+              />
               <Divider orientation="vertical" flexItem />
               {planFilters.map((plan) => (
                 <Chip
                   key={plan.key}
                   label={plan.label}
                   size="small"
-                  variant={activePlans.includes(plan.key) ? "filled" : "outlined"}
+                  variant={activePlans.includes(plan.key) ? 'filled' : 'outlined'}
                   onClick={() => {
                     setActivePlans((prev) =>
                       prev.includes(plan.key)
@@ -484,6 +471,7 @@ const App = () => {
           </Stack>
         </Paper>
 
+        {/* Loading Progress */}
         {isRankingLoading && (
           <Paper sx={{ p: 3, mb: 2 }}>
             <Stack spacing={2}>
@@ -495,20 +483,20 @@ const App = () => {
                   {rankingProgress?.errors > 0 && (
                     <Chip label={`${rankingProgress.errors} errors`} size="small" color="warning" />
                   )}
-                  <Chip 
-                    label={rankingProgress?.phase === "ranking" ? "Finishing" : "Processing"} 
-                    size="small" 
-                    color="primary" 
+                  <Chip
+                    label={rankingProgress?.phase === 'ranking' ? 'Finishing' : 'Processing'}
+                    size="small"
+                    color="primary"
                   />
                 </Stack>
               </Stack>
-              
-              <LinearProgress 
-                variant={rankingProgress?.percent ? "determinate" : "indeterminate"} 
-                value={rankingProgress?.percent || 0} 
-                sx={{ height: 10, borderRadius: 5 }} 
+
+              <LinearProgress
+                variant={rankingProgress?.percent ? 'determinate' : 'indeterminate'}
+                value={rankingProgress?.percent || 0}
+                sx={{ height: 10, borderRadius: 5 }}
               />
-              
+
               {rankingProgress?.total && (
                 <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
                   <Typography variant="h4" color="primary.main">
@@ -518,45 +506,81 @@ const App = () => {
                     funds processed
                   </Typography>
                   {rankingProgress?.eta > 0 && (
-                    <Chip 
-                      label={`~${rankingProgress.eta}s remaining`} 
-                      size="small" 
-                      variant="outlined" 
+                    <Chip
+                      label={`~${rankingProgress.eta}s remaining`}
+                      size="small"
+                      variant="outlined"
                     />
                   )}
                 </Stack>
               )}
-              
+
               <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 1 }}>
-                <Chip 
-                  icon={<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: rankingProgress?.phase === "loading_funds" ? "primary.main" : "success.main" }} />}
-                  label="Load funds" 
+                <Chip
+                  icon={
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor:
+                          rankingProgress?.phase === 'loading_funds'
+                            ? 'primary.main'
+                            : 'success.main',
+                      }}
+                    />
+                  }
+                  label="Load funds"
                   size="small"
-                  variant={rankingProgress?.phase === "loading_funds" ? "filled" : "outlined"}
+                  variant={rankingProgress?.phase === 'loading_funds' ? 'filled' : 'outlined'}
                 />
-                <Chip 
-                  icon={<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: rankingProgress?.phase === "processing" ? "primary.main" : (rankingProgress?.processed ? "success.main" : "grey.300") }} />}
-                  label="Fetch returns" 
+                <Chip
+                  icon={
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor:
+                          rankingProgress?.phase === 'processing'
+                            ? 'primary.main'
+                            : rankingProgress?.processed
+                              ? 'success.main'
+                              : 'grey.300',
+                      }}
+                    />
+                  }
+                  label="Fetch returns"
                   size="small"
-                  variant={rankingProgress?.phase === "processing" ? "filled" : "outlined"}
+                  variant={rankingProgress?.phase === 'processing' ? 'filled' : 'outlined'}
                 />
-                <Chip 
-                  icon={<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: rankingProgress?.phase === "ranking" ? "primary.main" : "grey.300" }} />}
-                  label="Build rankings" 
+                <Chip
+                  icon={
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: rankingProgress?.phase === 'ranking' ? 'primary.main' : 'grey.300',
+                      }}
+                    />
+                  }
+                  label="Build rankings"
                   size="small"
-                  variant={rankingProgress?.phase === "ranking" ? "filled" : "outlined"}
+                  variant={rankingProgress?.phase === 'ranking' ? 'filled' : 'outlined'}
                 />
               </Stack>
             </Stack>
           </Paper>
         )}
 
-        {/* Partial loading indicator - shown while inactive funds are loading */}
+        {/* Partial Loading Indicator */}
         {isPartialLoading && activeRanking && (
-          <Paper sx={{ p: 2, mb: 2, bgcolor: "info.light" }}>
+          <Paper sx={{ p: 2, mb: 2, bgcolor: 'info.light' }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Typography variant="body2" color="info.dark">
-                Showing {activeRanking.totalFunds} active funds. Loading {activeRanking.pendingInactive || 0} inactive funds in background...
+                Showing {activeRanking.totalFunds} active funds. Loading{' '}
+                {activeRanking.pendingInactive || 0} inactive funds in background...
               </Typography>
               <LinearProgress sx={{ flex: 1, height: 6, borderRadius: 3 }} />
             </Stack>
@@ -566,22 +590,22 @@ const App = () => {
         {/* Top Funds & Quick Insights */}
         {activeRanking && (
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            {/* Top Funds Panel */}
             <Grid item xs={12} md={8}>
-              <TopFundsPanel
-                topFunds={activeRanking.topFunds}
-                activeTimeframe={timeframe}
-              />
+              <TopFundsPanel topFunds={activeRanking.topFunds} activeTimeframe={timeframe} />
             </Grid>
 
-            {/* Quick Insights Column */}
             <Grid item xs={12} md={4}>
               <Stack spacing={2}>
+                {/* Top AUM Panel */}
                 <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Top AUM in {activeSectorName}</Typography>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+                    Top AUM in {activeSectorName}
+                  </Typography>
                   <Stack spacing={1}>
                     {topAumFunds.length === 0 && (
-                      <Typography variant="caption" color="text.secondary">No AUM data</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        No AUM data
+                      </Typography>
                     )}
                     {topAumFunds.slice(0, 4).map((fund) => (
                       <Stack
@@ -591,7 +615,15 @@ const App = () => {
                         alignItems="center"
                         justifyContent="space-between"
                       >
-                        <Typography variant="body2" sx={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            flex: 1,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           {fund.schemeName?.substring(0, 35)}
                         </Typography>
                         <Chip label={formatAum(fund.metrics?.aum)} size="small" />
@@ -600,11 +632,16 @@ const App = () => {
                   </Stack>
                 </Paper>
 
+                {/* Lowest Expense Panel */}
                 <Paper sx={{ p: 2 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Lowest Expense Ratio</Typography>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+                    Lowest Expense Ratio
+                  </Typography>
                   <Stack spacing={1}>
                     {lowestExpense.length === 0 && (
-                      <Typography variant="caption" color="text.secondary">No expense data</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        No expense data
+                      </Typography>
                     )}
                     {lowestExpense.slice(0, 4).map((fund) => (
                       <Stack
@@ -614,10 +651,21 @@ const App = () => {
                         alignItems="center"
                         justifyContent="space-between"
                       >
-                        <Typography variant="body2" sx={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            flex: 1,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           {fund.schemeName?.substring(0, 35)}
                         </Typography>
-                        <Chip label={`${fund.metrics?.expenseRatio?.toFixed?.(2) ?? "—"}%`} size="small" />
+                        <Chip
+                          label={`${fund.metrics?.expenseRatio?.toFixed?.(2) ?? '—'}%`}
+                          size="small"
+                        />
                       </Stack>
                     ))}
                   </Stack>
@@ -627,8 +675,8 @@ const App = () => {
           </Grid>
         )}
 
-        {/* Fund Details Panel (when searching a specific fund) */}
-        {detailsStatus === "loading" && (
+        {/* Fund Details Panel */}
+        {detailsStatus === 'loading' && (
           <Paper sx={{ p: 3, mb: 2 }}>
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
               Fetching fund details…
@@ -639,36 +687,36 @@ const App = () => {
 
         {details && (
           <Paper sx={{ p: 2, mb: 2 }}>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems="flex-start">
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="flex-start">
               <Box flex={1}>
                 <Typography variant="h3">{details.schemeName}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Code: {details.schemeCode} · {details.meta?.fund_house || ""}
+                  Code: {details.schemeCode} · {details.meta?.fund_house || ''}
                 </Typography>
               </Box>
               <Stack direction="row" spacing={1} flexWrap="wrap">
-                <Chip label={`NAV: ${details.latestNav || "—"}`} />
+                <Chip label={`NAV: ${details.latestNav || '—'}`} />
                 <Chip label={`1Y: ${formatReturn(details.returns?.year1)}`} />
                 <Chip label={`3Y: ${formatReturn(details.returns?.year3)}`} />
                 <Chip label={`5Y: ${formatReturn(details.returns?.year5)}`} />
                 <Chip label={`AUM: ${formatAum(details.metrics?.aum)}`} />
-                <Chip label={`P/E: ${details.metrics?.peRatio ?? "—"}`} />
+                <Chip label={`P/E: ${details.metrics?.peRatio ?? '—'}`} />
               </Stack>
             </Stack>
           </Paper>
         )}
       </Container>
 
-      {/* Full-width ranking table section */}
+      {/* Full-width Ranking Table */}
       {activeRanking && (
         <Box
           sx={{
-            width: "100%",
+            width: '100%',
             px: 2,
             pb: 4,
-            animation: "floatIn 0.6s ease",
-            animationDelay: "0.2s",
-            animationFillMode: "both",
+            animation: 'floatIn 0.6s ease',
+            animationDelay: '0.2s',
+            animationFillMode: 'both',
           }}
         >
           <RankingTable

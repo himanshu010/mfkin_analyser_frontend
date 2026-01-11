@@ -17,4 +17,3 @@ npm run dev
 
 - Sector rankings and top funds (1Y/3Y/5Y)
 - Fund lookup with details + sector ranking
-

@@ -1,0 +1,79 @@
+// Color palette
+$color-primary: #1f5460;
+$color-primary-dark: #123b43;
+$color-primary-light: #3e7883;
+$color-secondary: #f2b26c;
+$color-secondary-dark: #d9944a;
+$color-info: #7fb8c2;
+$color-info-light: #e3f2fd;
+$color-success: #2e7d63;
+$color-success-light: #c8e6c9;
+$color-warning: #e59c46;
+$color-error: #c62828;
+$color-muted: #bdbdbd;
+
+// Background colors
+$bg-default: #f6f1ec;
+$bg-paper: #fff7f0;
+$bg-accent: #fde1c1;
+$bg-ice: #edf3f2;
+$bg-table-header: #fff7f0;
+$bg-top-rank: rgba(242, 178, 108, 0.12);
+
+// Text colors
+$text-primary: #1d3d43;
+$text-secondary: #5d6a6f;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// Border radius
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 20px;
+$border-radius-xl: 24px;
+$border-radius-pill: 999px;
+
+// Shadows
+$shadow-soft: 0 18px 45px rgba(23, 39, 43, 0.08);
+$shadow-glow-gold: 0 20px 40px rgba(242, 178, 108, 0.35);
+$shadow-glow-silver: 0 20px 40px rgba(233, 201, 138, 0.35);
+$shadow-glow-ice: 0 20px 40px rgba(127, 184, 194, 0.35);
+
+// Font families
+$font-heading: 'Sora', sans-serif;
+$font-body: 'Manrope', system-ui, sans-serif;
+
+// Gradients
+$gradient-bg: radial-gradient(circle at top, #f9e6d7 0%, #f6f1ec 45%, #ecf0ef 100%);
+$gradient-progress: linear-gradient(90deg, #1f5460, #7fb8c2);
+$gradient-gold: linear-gradient(140deg, #f3d3a1, #fff7f0);
+$gradient-silver: linear-gradient(140deg, #f7e6c1, #fff7f0);
+$gradient-ice: linear-gradient(140deg, #e6edf8, #fff7f0);
+$gradient-skeleton: linear-gradient(90deg, rgba(31, 84, 96, 0.08), rgba(31, 84, 96, 0.02));
+$gradient-logo: linear-gradient(135deg, #fde1c1, #cde6e4);
+
+// Borders
+$border-subtle: 1px solid rgba(31, 84, 96, 0.08);
+$border-medium: 1px solid rgba(31, 84, 96, 0.12);
+$border-strong: 1px solid rgba(31, 84, 96, 0.35);
+$border-divider: 2px solid rgba(31, 84, 96, 0.15);
+
+// Table dimensions
+$table-col-rank: 50px;
+$table-col-name: 300px;
+$table-col-return: 90px;
+$table-col-aum: 90px;
+$table-col-status: 80px;
+$table-col-standard: 90px;
+$table-col-small: 70px;
+$table-col-medium: 85px;
+$table-col-large: 110px;
+
+// Z-index
+$z-sticky: 1;
+$z-sticky-header: 3;
