@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
+  Chip,
   Paper,
   Table,
   TableBody,
@@ -8,18 +9,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
-  ToggleButton,
-  ToggleButtonGroup,
+  TableSortLabel,
+  TablePagination,
   Tooltip,
-  Chip,
+  Typography,
 } from "@mui/material";
-
-const timeframes = [
-  { key: "oneYear", label: "1Y" },
-  { key: "threeYear", label: "3Y" },
-  { key: "fiveYear", label: "5Y" },
-];
 
 const formatReturn = (value) =>
   value === null || value === undefined ? "—" : `${value.toFixed(2)}%`;
@@ -27,163 +21,226 @@ const formatReturn = (value) =>
 const formatNumber = (value, decimals = 2) =>
   value === null || value === undefined ? "—" : Number(value).toFixed(decimals);
 
-// AUM from Kuvera API is in Lakhs (divide by 10 to get Crores)
 const formatAum = (value) => {
   if (value === null || value === undefined) return "—";
   const num = Number(value);
   if (Number.isNaN(num)) return "—";
-  const crores = num / 10; // Convert lakhs to crores
-  if (crores >= 10000) return `₹${(crores / 1000).toFixed(0)}K Cr`;
+  const crores = num / 10;
   if (crores >= 1000) return `₹${(crores / 1000).toFixed(1)}K Cr`;
   if (crores >= 100) return `₹${crores.toFixed(0)} Cr`;
   return `₹${crores.toFixed(1)} Cr`;
 };
 
-const RankingTable = ({ rankings }) => {
-  const [timeframe, setTimeframe] = useState("oneYear");
+const formatPercent = (value) => {
+  if (value === null || value === undefined) return "—";
+  return `${Number(value).toFixed(2)}%`;
+};
 
-  const rows = useMemo(() => rankings?.[timeframe] || [], [rankings, timeframe]);
+// Only enable pagination for very large datasets (1000+ funds like "All Funds")
+const PAGINATION_THRESHOLD = 1000;
+
+const columns = [
+  { id: "rank", label: "#", align: "center", sortable: true, width: 50, sticky: true, left: 0 },
+  { id: "schemeName", label: "Fund Name", align: "left", sortable: true, width: 300, sticky: true, left: 50 },
+  { id: "returns", label: "Return", align: "right", sortable: true, width: 90, sticky: true, left: 350 },
+  { id: "aum", label: "AUM", align: "right", sortable: true, width: 90, sticky: true, left: 440, accessor: (row) => row.metrics?.aum },
+  { id: "isActive", label: "Status", align: "center", sortable: true, width: 80 },
+  { id: "expenseRatio", label: "Expense", align: "right", sortable: true, width: 90, accessor: (row) => row.metrics?.expenseRatio },
+  { id: "category", label: "Category", align: "center", sortable: true, width: 90, accessor: (row) => row.metrics?.category },
+  { id: "peRatio", label: "P/E", align: "right", sortable: true, width: 70, accessor: (row) => row.metrics?.peRatio },
+  { id: "pbRatio", label: "P/B", align: "right", sortable: true, width: 70, accessor: (row) => row.metrics?.pbRatio },
+  { id: "dividendYield", label: "Div Yld", align: "right", sortable: true, width: 80, accessor: (row) => row.metrics?.dividendYield },
+  { id: "turnoverRatio", label: "Turnover", align: "right", sortable: true, width: 90, accessor: (row) => row.metrics?.turnoverRatio },
+  { id: "sharpeRatio", label: "Sharpe", align: "right", sortable: true, width: 80, accessor: (row) => row.metrics?.sharpeRatio },
+  { id: "alpha", label: "Alpha", align: "right", sortable: true, width: 75, accessor: (row) => row.metrics?.alpha },
+  { id: "beta", label: "Beta", align: "right", sortable: true, width: 70, accessor: (row) => row.metrics?.beta },
+  { id: "stdDev", label: "Std Dev", align: "right", sortable: true, width: 85, accessor: (row) => row.metrics?.standardDeviation },
+  { id: "sortinoRatio", label: "Sortino", align: "right", sortable: true, width: 80, accessor: (row) => row.metrics?.sortinoRatio },
+  { id: "treynorRatio", label: "Treynor", align: "right", sortable: true, width: 85, accessor: (row) => row.metrics?.treynorRatio },
+  { id: "riskRating", label: "Risk", align: "center", sortable: true, width: 110, accessor: (row) => row.metrics?.riskRating },
+  { id: "inceptionDate", label: "Inception", align: "center", sortable: true, width: 100, accessor: (row) => row.metrics?.inceptionDate },
+];
+
+const getSortValue = (row, columnId) => {
+  const column = columns.find((c) => c.id === columnId);
+  if (column?.accessor) return column.accessor(row);
+  return row[columnId];
+};
+
+const descendingComparator = (a, b, orderBy) => {
+  const aVal = getSortValue(a, orderBy);
+  const bVal = getSortValue(b, orderBy);
+  if (aVal == null && bVal == null) return 0;
+  if (aVal == null) return 1;
+  if (bVal == null) return -1;
+  if (typeof aVal === "string" && typeof bVal === "string") return bVal.localeCompare(aVal);
+  if (bVal < aVal) return -1;
+  if (bVal > aVal) return 1;
+  return 0;
+};
+
+const getComparator = (order, orderBy) =>
+  order === "desc"
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+
+const RankingTable = ({ rows, timeframeLabel, note }) => {
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("rank");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(100);
+
+  const safeRows = rows || [];
+  const usePagination = safeRows.length > PAGINATION_THRESHOLD;
+
+  const handleSort = (columnId) => {
+    const isAsc = orderBy === columnId && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(columnId);
+    setPage(0);
+  };
+
+  const sortedRows = useMemo(() => [...safeRows].sort(getComparator(order, orderBy)), [safeRows, order, orderBy]);
+  const displayRows = useMemo(() => {
+    if (!usePagination) return sortedRows;
+    return sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [sortedRows, page, rowsPerPage, usePagination]);
+
+  React.useEffect(() => setPage(0), [safeRows.length]);
 
   return (
-    <Paper elevation={0} sx={{ p: 3 }}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h3">Full Ranking</Typography>
-        <ToggleButtonGroup
-          value={timeframe}
-          exclusive
-          onChange={(_, value) => value && setTimeframe(value)}
-          size="small"
-        >
-          {timeframes.map((item) => (
-            <ToggleButton key={item.key} value={item.key}>
-              {item.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+    <Paper elevation={0} sx={{ width: "100%", p: 0 }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" px={2} py={1.5}>
+        <Box>
+          <Typography variant="h3">Full Ranking</Typography>
+          <Typography variant="caption" color="text.secondary">
+            {timeframeLabel || "—"} returns • Click headers to sort
+            {usePagination && ` • Page ${page + 1} of ${Math.ceil(safeRows.length / rowsPerPage)}`}
+          </Typography>
+        </Box>
+        <Chip label={`${safeRows.length} funds`} size="small" />
       </Box>
-      <TableContainer sx={{ maxHeight: 600 }}>
-        <Table size="small" stickyHeader>
-          <TableHead>
+
+      {usePagination && (
+        <TablePagination
+          component="div"
+          count={safeRows.length}
+          page={page}
+          onPageChange={(_, p) => setPage(p)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+          rowsPerPageOptions={[50, 100, 250, 500]}
+          sx={{ borderBottom: "1px solid rgba(224, 224, 224, 1)" }}
+        />
+      )}
+
+      <TableContainer sx={{ maxHeight: usePagination ? "calc(100vh - 350px)" : "calc(100vh - 200px)", width: "100%" }}>
+        <Table size="small" stickyHeader sx={{ tableLayout: "fixed", width: "100%" }}>
+          <TableHead sx={{ "& th": { backgroundColor: "#FFF7F0", fontSize: "0.75rem", fontWeight: 600, py: 1 } }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, minWidth: 50 }}>Rank</TableCell>
-              <TableCell sx={{ fontWeight: 600, minWidth: 250 }}>Fund</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 80 }}>
-                <Tooltip title="Return for selected timeframe">
-                  <span>Return</span>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 80 }}>
-                <Tooltip title="Assets Under Management (in Crores)">
-                  <span>AUM</span>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 60 }}>
-                <Tooltip title="Portfolio Price-to-Earnings Ratio">
-                  <span>P/E</span>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 70 }}>
-                <Tooltip title="Total Expense Ratio - annual fee charged (lower is better)">
-                  <span>Exp%</span>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 70 }}>
-                <Tooltip title="Sharpe Ratio - risk-adjusted return (higher is better, >1 is good)">
-                  <span>Sharpe</span>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 70 }}>
-                <Tooltip title="Sortino Ratio - downside-risk-adjusted return (higher is better)">
-                  <span>Sortino</span>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 70 }}>
-                <Tooltip title="Standard Deviation (annualized) - volatility (lower = more stable)">
-                  <span>StdDev</span>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, minWidth: 75 }}>
-                <Tooltip title="Maximum Drawdown - largest decline from peak (lower is better)">
-                  <span>MaxDD</span>
-                </Tooltip>
-              </TableCell>
+              {columns.map((col) => (
+                <TableCell
+                  key={col.id}
+                  align={col.align}
+                  sx={{
+                    width: col.width,
+                    minWidth: col.width,
+                    cursor: col.sortable ? "pointer" : "default",
+                    whiteSpace: "nowrap",
+                    px: 1,
+                    ...(col.sticky && {
+                      position: "sticky",
+                      left: col.left,
+                      zIndex: 3,
+                      backgroundColor: "#FFF7F0",
+                      borderRight: col.id === "aum" ? "2px solid rgba(31,84,96,0.15)" : undefined,
+                    }),
+                  }}
+                  sortDirection={orderBy === col.id ? order : false}
+                >
+                  {col.sortable ? (
+                    <TableSortLabel active={orderBy === col.id} direction={orderBy === col.id ? order : "asc"} onClick={() => handleSort(col.id)}>
+                      {col.label}
+                    </TableSortLabel>
+                  ) : col.label}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => {
+            {displayRows.map((row) => {
               const m = row.metrics || {};
+              const isTop3 = row.rank <= 3;
+              const bgColor = isTop3 ? "#FDF5EE" : "#fff";
               return (
-                <TableRow 
-                  key={`${timeframe}-${row.schemeCode}`}
-                  sx={{ 
-                    "&:hover": { bgcolor: "action.hover" },
-                    bgcolor: row.rank <= 3 ? "success.lighter" : "inherit"
+                <TableRow
+                  key={`${row.schemeCode}-${row.rank}`}
+                  sx={{
+                    "&:hover": { bgcolor: "rgba(31,84,96,0.06)" },
+                    bgcolor: isTop3 ? "rgba(242, 178, 108, 0.12)" : "inherit",
+                    "& td": { py: 0.75, px: 1, fontSize: "0.8rem" },
                   }}
                 >
-                  <TableCell>
-                    {row.rank <= 3 ? (
-                      <Chip 
-                        label={row.rank} 
-                        size="small" 
-                        color={row.rank === 1 ? "success" : "default"}
-                        sx={{ fontWeight: 600, minWidth: 28 }}
-                      />
-                    ) : row.rank}
+                  <TableCell align="center" sx={{ position: "sticky", left: 0, zIndex: 1, backgroundColor: bgColor }}>
+                    {isTop3 ? <Chip label={row.rank} size="small" sx={{ fontWeight: 700, background: "#F2B26C", height: 22, fontSize: "0.75rem" }} /> : row.rank}
                   </TableCell>
-                  <TableCell sx={{ maxWidth: 280 }}>
-                    <Tooltip title={row.schemeName}>
-                      <Typography variant="body2" noWrap>
-                        {row.schemeName}
-                      </Typography>
+                  <TableCell sx={{ overflow: "hidden", textOverflow: "ellipsis", position: "sticky", left: 50, zIndex: 1, backgroundColor: bgColor }}>
+                    <Tooltip title={`${row.schemeName}${m.fundManager ? ` • ${m.fundManager}` : ""}`} placement="top-start">
+                      <Box>
+                        <Typography variant="body2" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.8rem", fontWeight: 500 }}>
+                          {row.schemeName}
+                        </Typography>
+                        {m.fundManager && (
+                          <Typography variant="caption" color="text.secondary" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block", fontSize: "0.7rem" }}>
+                            {m.fundManager}
+                          </Typography>
+                        )}
+                      </Box>
                     </Tooltip>
                   </TableCell>
-                  <TableCell 
-                    align="right"
-                    sx={{ 
-                      fontWeight: 600,
-                      color: row.returns > 0 ? "success.main" : row.returns < 0 ? "error.main" : "inherit"
-                    }}
-                  >
+                  <TableCell align="right" sx={{ fontWeight: 600, position: "sticky", left: 350, zIndex: 1, backgroundColor: bgColor, color: row.returns > 0 ? "success.main" : row.returns < 0 ? "error.main" : "inherit" }}>
                     {formatReturn(row.returns)}
                   </TableCell>
-                  <TableCell align="right">{formatAum(m.aum)}</TableCell>
+                  <TableCell align="right" sx={{ position: "sticky", left: 440, zIndex: 1, backgroundColor: bgColor, borderRight: "2px solid rgba(31,84,96,0.15)" }}>
+                    {formatAum(m.aum)}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip label={row.isActive ? "Active" : "Inactive"} size="small" sx={{ fontSize: "0.65rem", height: 20, bgcolor: row.isActive ? "success.light" : "grey.300", color: row.isActive ? "success.dark" : "text.secondary" }} />
+                  </TableCell>
+                  <TableCell align="right">{m.expenseRatio != null ? formatPercent(m.expenseRatio) : "—"}</TableCell>
+                  <TableCell align="center"><Typography variant="caption" noWrap>{m.category || "—"}</Typography></TableCell>
                   <TableCell align="right">{formatNumber(m.peRatio, 1)}</TableCell>
-                  <TableCell 
-                    align="right"
-                    sx={{ color: m.expenseRatio > 2 ? "error.main" : m.expenseRatio < 1 ? "success.main" : "inherit" }}
-                  >
-                    {m.expenseRatio != null ? `${formatNumber(m.expenseRatio)}%` : "—"}
-                  </TableCell>
-                  <TableCell 
-                    align="right"
-                    sx={{ color: m.sharpeRatio > 1 ? "success.main" : m.sharpeRatio < 0 ? "error.main" : "inherit" }}
-                  >
-                    {formatNumber(m.sharpeRatio)}
-                  </TableCell>
-                  <TableCell 
-                    align="right"
-                    sx={{ color: m.sortinoRatio > 1 ? "success.main" : m.sortinoRatio < 0 ? "error.main" : "inherit" }}
-                  >
-                    {formatNumber(m.sortinoRatio)}
-                  </TableCell>
-                  <TableCell align="right">{formatNumber(m.standardDeviation)}</TableCell>
-                  <TableCell 
-                    align="right"
-                    sx={{ color: m.maxDrawdown > 20 ? "error.main" : m.maxDrawdown > 10 ? "warning.main" : "success.main" }}
-                  >
-                    {m.maxDrawdown !== null && m.maxDrawdown !== undefined ? `${formatNumber(m.maxDrawdown)}%` : "—"}
-                  </TableCell>
+                  <TableCell align="right">{formatNumber(m.pbRatio, 1)}</TableCell>
+                  <TableCell align="right">{m.dividendYield != null ? formatPercent(m.dividendYield) : "—"}</TableCell>
+                  <TableCell align="right">{formatNumber(m.turnoverRatio, 2)}</TableCell>
+                  <TableCell align="right"><Tooltip title="Sharpe Ratio"><span>{formatNumber(m.sharpeRatio, 2)}</span></Tooltip></TableCell>
+                  <TableCell align="right"><Tooltip title="Alpha"><span style={{ color: m.alpha > 0 ? "#2e7d32" : m.alpha < 0 ? "#c62828" : "inherit" }}>{formatNumber(m.alpha, 2)}</span></Tooltip></TableCell>
+                  <TableCell align="right"><Tooltip title="Beta"><span>{formatNumber(m.beta, 2)}</span></Tooltip></TableCell>
+                  <TableCell align="right"><Tooltip title="Standard Deviation"><span>{formatNumber(m.standardDeviation, 2)}</span></Tooltip></TableCell>
+                  <TableCell align="right"><Tooltip title="Sortino Ratio"><span>{formatNumber(m.sortinoRatio, 2)}</span></Tooltip></TableCell>
+                  <TableCell align="right"><Tooltip title="Treynor Ratio"><span>{formatNumber(m.treynorRatio, 2)}</span></Tooltip></TableCell>
+                  <TableCell align="center"><Typography variant="caption" noWrap>{m.riskRating || "—"}</Typography></TableCell>
+                  <TableCell align="center"><Typography variant="caption" noWrap>{m.inceptionDate || "—"}</Typography></TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
       </TableContainer>
-      {rows.length > 0 && (
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-          Showing {rows.length} funds • AUM/P/E/Expense from Kuvera, Risk metrics from NAV history • "—" = data unavailable
-        </Typography>
+
+      {usePagination && (
+        <TablePagination
+          component="div"
+          count={safeRows.length}
+          page={page}
+          onPageChange={(_, p) => setPage(p)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+          rowsPerPageOptions={[50, 100, 250, 500]}
+        />
       )}
+
+      {note && <Typography variant="caption" color="text.secondary" sx={{ mt: 1, px: 2, display: "block", pb: 1 }}>{note}</Typography>}
     </Paper>
   );
 };

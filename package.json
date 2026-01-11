@@ -1,5 +1,5 @@
 {
-  "name": "mf-analyser-frontend",
+  "name": "mfkin-analyser-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -17,7 +17,8 @@
     "axios": "^1.6.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-redux": "^9.1.1"
+    "react-redux": "^9.1.1",
+    "react-window": "^2.2.4"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

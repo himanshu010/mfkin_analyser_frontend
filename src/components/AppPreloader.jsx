@@ -1,6 +1,6 @@
 import React from "react";
-import { Box, CircularProgress, Typography, Stack } from "@mui/material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+import { Box, LinearProgress, Paper, Stack, Typography } from "@mui/material";
+import InsightsIcon from "@mui/icons-material/Insights";
 
 const AppPreloader = ({ message = "Loading sector catalog..." }) => {
   return (
@@ -11,33 +11,55 @@ const AppPreloader = ({ message = "Loading sector catalog..." }) => {
         alignItems: "center",
         justifyContent: "center",
         background:
-          "radial-gradient(circle at top, #FCE8C8 0%, #F5F0E6 45%, #EDF2F3 100%)",
+          "radial-gradient(circle at top, #F9E6D7 0%, #F6F1EC 45%, #ECF0EF 100%)",
+        p: 3,
       }}
     >
-      <Stack spacing={3} alignItems="center">
-        <Box
-          sx={{
-            background: "#FFE3C2",
-            color: "#0F4C5C",
-            borderRadius: 3,
-            p: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <DashboardIcon sx={{ fontSize: 48 }} />
-        </Box>
-        <Typography variant="h2" sx={{ color: "#0F4C5C" }}>
-          MF Analyser
-        </Typography>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <CircularProgress size={24} sx={{ color: "#0F4C5C" }} />
-          <Typography variant="body1" color="text.secondary">
-            {message}
-          </Typography>
+      <Paper sx={{ p: 4, maxWidth: 520, width: "100%" }}>
+        <Stack spacing={3}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "linear-gradient(135deg, #FDE1C1, #CDE6E4)",
+                color: "#1F5460",
+              }}
+            >
+              <InsightsIcon />
+            </Box>
+            <Box>
+              <Typography variant="h2">MF Analyser</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Preparing dashboards and rankings
+              </Typography>
+            </Box>
+          </Stack>
+          <Box>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              {message}
+            </Typography>
+            <LinearProgress />
+          </Box>
+          <Stack spacing={1}>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Box
+                key={index}
+                sx={{
+                  height: 10,
+                  borderRadius: 999,
+                  background:
+                    "linear-gradient(90deg, rgba(31,84,96,0.08), rgba(31,84,96,0.02))",
+                }}
+              />
+            ))}
+          </Stack>
         </Stack>
-      </Stack>
+      </Paper>
     </Box>
   );
 };

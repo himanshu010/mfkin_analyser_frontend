@@ -1,36 +1,49 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   AppBar,
-  Backdrop,
+  Avatar,
+  Badge,
   Box,
   Button,
   Chip,
-  CircularProgress,
   Container,
   Divider,
-  FormControl,
   Grid,
   IconButton,
-  InputLabel,
-  MenuItem,
+  InputAdornment,
+  LinearProgress,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Paper,
-  Select,
-  Snackbar,
   Stack,
-  Tab,
-  Tabs,
   TextField,
-  Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import ScienceIcon from "@mui/icons-material/Science";
+import MemoryIcon from "@mui/icons-material/Memory";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import ConstructionIcon from "@mui/icons-material/Construction";
+import BoltIcon from "@mui/icons-material/Bolt";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import MovieIcon from "@mui/icons-material/Movie";
+import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
+import FactoryIcon from "@mui/icons-material/Factory";
+import ShieldIcon from "@mui/icons-material/Shield";
+import PublicIcon from "@mui/icons-material/Public";
+import SpaIcon from "@mui/icons-material/Spa";
+import TuneIcon from "@mui/icons-material/Tune";
 import InsightsIcon from "@mui/icons-material/Insights";
-import DashboardIcon from "@mui/icons-material/Dashboard";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSectors, fetchSectorRanking } from "./features/sectors/sectorSlice.js";
+import { fetchSectors, fetchSectorRanking, setActiveSector } from "./features/sectors/sectorSlice.js";
 import {
   clearFund,
   fetchFundDetails,
@@ -39,10 +52,51 @@ import {
 import TopFundsPanel from "./components/TopFundsPanel.jsx";
 import RankingTable from "./components/RankingTable.jsx";
 import AppPreloader from "./components/AppPreloader.jsx";
-import { getPreloadStatus, triggerPreload, getSectorRankingStream } from "./app/api.js";
+
+const timeframes = [
+  { key: "oneYear", label: "1Y" },
+  { key: "threeYear", label: "3Y" },
+  { key: "fiveYear", label: "5Y" },
+];
+
+const planFilters = [
+  { key: "direct", label: "Direct" },
+  { key: "regular", label: "Regular" },
+  { key: "growth", label: "Growth" },
+  { key: "idcw", label: "IDCW" },
+];
 
 const formatReturn = (value) =>
-  value === null || value === undefined ? "N/A" : `${value.toFixed(2)}%`;
+  value === null || value === undefined ? "—" : `${value.toFixed(2)}%`;
+
+const formatAum = (value) => {
+  if (value === null || value === undefined) return "—";
+  const num = Number(value);
+  if (Number.isNaN(num)) return "—";
+  const crores = num / 10;
+  if (crores >= 1000) return `₹${(crores / 1000).toFixed(1)}K Cr`;
+  if (crores >= 100) return `₹${crores.toFixed(0)} Cr`;
+  return `₹${crores.toFixed(1)} Cr`;
+};
+
+const getSectorIcon = (sector) => {
+  const key = sector.toLowerCase();
+  if (key.includes("bank")) return <AccountBalanceIcon />;
+  if (key.includes("pharma") || key.includes("health")) return <ScienceIcon />;
+  if (key.includes("tech")) return <MemoryIcon />;
+  if (key.includes("fmcg") || key.includes("consumer")) return <ShoppingBagIcon />;
+  if (key.includes("infra") || key.includes("construction")) return <ConstructionIcon />;
+  if (key.includes("energy") || key.includes("power")) return <BoltIcon />;
+  if (key.includes("auto")) return <DirectionsCarIcon />;
+  if (key.includes("real")) return <HomeWorkIcon />;
+  if (key.includes("media")) return <MovieIcon />;
+  if (key.includes("telecom")) return <PhoneAndroidIcon />;
+  if (key.includes("manufacturing") || key.includes("industrial")) return <FactoryIcon />;
+  if (key.includes("defense")) return <ShieldIcon />;
+  if (key.includes("global") || key.includes("international")) return <PublicIcon />;
+  if (key.includes("esg") || key.includes("sustain")) return <SpaIcon />;
+  return <DashboardCustomizeIcon />;
+};
 
 const App = () => {
   const dispatch = useDispatch();
@@ -55,55 +109,17 @@ const App = () => {
     sectorRanking,
     sectorRankingStatus,
   } = useSelector((state) => state.funds);
-
-  const [tab, setTab] = useState("sector");
-  const [sectorInput, setSectorInput] = useState("");
-  const [fundInput, setFundInput] = useState("");
   
-  // Preload state
-  const [preloadStatus, setPreloadStatus] = useState(null);
-  const [isPreloading, setIsPreloading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
+  const rankingProgress = useSelector((state) => state.sectors.rankingProgress);
 
-  // Streaming progress state
-  const [progress, setProgress] = useState(null);
-  const [streamingRanking, setStreamingRanking] = useState(null);
-
-  const highlightedSectors = useMemo(() => list.slice(0, 6), [list]);
-
-  // Fetch preload status on mount
-  useEffect(() => {
-    getPreloadStatus()
-      .then((res) => setPreloadStatus(res.data))
-      .catch(() => setPreloadStatus(null));
-  }, []);
-
-  const handlePreload = useCallback(async () => {
-    setIsPreloading(true);
-    try {
-      const res = await triggerPreload();
-      setPreloadStatus({ preloaded: true, metadata: res.data });
-      setSnackbar({
-        open: true,
-        message: `Preload complete! ${res.data.classifiedFunds} funds classified.`,
-        severity: "success",
-      });
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: `Preload failed: ${err.message}`,
-        severity: "error",
-      });
-    } finally {
-      setIsPreloading(false);
-    }
-  }, []);
-
-  const formatPreloadDate = (dateStr) => {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    return date.toLocaleString();
-  };
+  const [selectedSector, setSelectedSector] = useState("");
+  const [sectorSearch, setSectorSearch] = useState("");
+  const [searchMode, setSearchMode] = useState("sector");
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [timeframe, setTimeframe] = useState("oneYear");
+  const [tableFilter, setTableFilter] = useState("");
+  const [activePlans, setActivePlans] = useState([]);
+  const [recentSectors, setRecentSectors] = useState([]);
 
   useEffect(() => {
     if (listStatus === "idle") {
@@ -111,357 +127,557 @@ const App = () => {
     }
   }, [dispatch, listStatus]);
 
-  // Show preloader while initial sectors are loading
+  useEffect(() => {
+    if (listStatus === "succeeded" && list.length > 0 && !selectedSector) {
+      // Default to Technology (IT) if available, otherwise first sector
+      const defaultSector = list.includes("Technology (IT)") ? "Technology (IT)" : list[0];
+      setSelectedSector(defaultSector);
+      dispatch(setActiveSector(defaultSector));
+      dispatch(fetchSectorRanking(defaultSector));
+    }
+  }, [dispatch, listStatus, list, selectedSector]);
+
+  useEffect(() => {
+    if (sectorRanking?.fund?.sector) {
+      setSelectedSector(sectorRanking.fund.sector);
+    }
+  }, [sectorRanking]);
+
+  const handleSectorSelect = (sector) => {
+    setSelectedSector(sector);
+    dispatch(setActiveSector(sector)); // Set active sector for priority queue
+    dispatch(clearFund());
+    dispatch(fetchSectorRanking(sector));
+    setRecentSectors((prev) => [sector, ...prev.filter((item) => item !== sector)].slice(0, 5));
+  };
+
+  const handleGlobalSearch = () => {
+    if (!globalSearch.trim()) return;
+    if (searchMode === "sector") {
+      const match = list.find(
+        (sector) => sector.toLowerCase() === globalSearch.trim().toLowerCase()
+      );
+      if (match) {
+        handleSectorSelect(match);
+        return;
+      }
+      handleSectorSelect(globalSearch.trim());
+      return;
+    }
+    dispatch(clearFund());
+    dispatch(fetchFundDetails(globalSearch.trim()));
+    dispatch(fetchFundSectorRanking(globalSearch.trim()));
+  };
+
+  const activeRanking = sectorRanking?.sectorRanking || ranking;
+  const activeSectorName =
+    sectorRanking?.fund?.sector || activeRanking?.sector || selectedSector || "";
+  const isRankingLoading = rankingStatus === "loading" || sectorRankingStatus === "loading";
+  const isPartialLoading = rankingStatus === "partial"; // Active funds shown, inactive still loading
+
+  const rows = activeRanking?.rankings?.[timeframe] || [];
+
+  const filteredRows = useMemo(() => {
+    const search = tableFilter.trim().toLowerCase();
+    return rows.filter((row) => {
+      const name = row.schemeName?.toLowerCase() || "";
+      const matchesSearch = !search || name.includes(search);
+      const matchesPlans =
+        activePlans.length === 0 ||
+        activePlans.some((plan) => name.includes(plan));
+      return matchesSearch && matchesPlans;
+    });
+  }, [rows, tableFilter, activePlans]);
+
+  const topAumFunds = useMemo(() => {
+    return [...filteredRows]
+      .filter((row) => row.metrics?.aum)
+      .sort((a, b) => (b.metrics?.aum || 0) - (a.metrics?.aum || 0))
+      .slice(0, 4);
+  }, [filteredRows]);
+
+  const lowestExpense = useMemo(() => {
+    return [...filteredRows]
+      .filter((row) => row.metrics?.expenseRatio != null)
+      .sort((a, b) => (a.metrics?.expenseRatio || 0) - (b.metrics?.expenseRatio || 0))
+      .slice(0, 4);
+  }, [filteredRows]);
+
+  const returnSpreadLeaders = useMemo(() => {
+    const oneYear = activeRanking?.rankings?.oneYear || [];
+    const fiveYear = activeRanking?.rankings?.fiveYear || [];
+    const map = new Map();
+    oneYear.forEach((row) => {
+      map.set(row.schemeCode, {
+        schemeCode: row.schemeCode,
+        schemeName: row.schemeName,
+        oneYear: row.returns,
+      });
+    });
+    fiveYear.forEach((row) => {
+      const entry = map.get(row.schemeCode) || {
+        schemeCode: row.schemeCode,
+        schemeName: row.schemeName,
+      };
+      entry.fiveYear = row.returns;
+      map.set(row.schemeCode, entry);
+    });
+    const spreads = [];
+    map.forEach((entry) => {
+      if (typeof entry.oneYear === "number" && typeof entry.fiveYear === "number") {
+        spreads.push({
+          ...entry,
+          spread: Math.abs(entry.oneYear - entry.fiveYear),
+        });
+      }
+    });
+    return spreads.sort((a, b) => b.spread - a.spread).slice(0, 4);
+  }, [activeRanking]);
+
+  const averageReturn = useMemo(() => {
+    const values = filteredRows
+      .map((row) => row.returns)
+      .filter((value) => typeof value === "number");
+    if (values.length === 0) return null;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }, [filteredRows]);
+
+  const averagePe = useMemo(() => {
+    const values = filteredRows
+      .map((row) => row.metrics?.peRatio)
+      .filter((value) => typeof value === "number");
+    if (values.length === 0) return null;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }, [filteredRows]);
+
+  const averagePb = useMemo(() => {
+    const values = filteredRows
+      .map((row) => row.metrics?.pbRatio)
+      .filter((value) => typeof value === "number");
+    if (values.length === 0) return null;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }, [filteredRows]);
+
+  const aumCoverage = useMemo(() => {
+    const withAum = filteredRows.filter((row) => row.metrics?.aum != null).length;
+    return filteredRows.length === 0
+      ? 0
+      : Math.round((withAum / filteredRows.length) * 100);
+  }, [filteredRows]);
+
+  const sectorList = useMemo(() => {
+    const search = sectorSearch.trim().toLowerCase();
+    if (!search) return list;
+    return list.filter((sector) => sector.toLowerCase().includes(search));
+  }, [list, sectorSearch]);
+
   if (listStatus === "idle" || listStatus === "loading") {
     return <AppPreloader message="Loading sector catalog..." />;
   }
-
-  const handleSectorSearch = async () => {
-    if (!sectorInput) return;
-    
-    // Clear previous results and start streaming
-    setStreamingRanking(null);
-    setProgress({ percent: 0, message: "Starting...", total: 0, processed: 0 });
-    
-    try {
-      const result = await getSectorRankingStream(sectorInput, {
-        onStatus: (data) => {
-          setProgress((prev) => ({ ...prev, message: data.message, phase: data.phase }));
-        },
-        onProgress: (data) => {
-          setProgress({
-            percent: data.percent,
-            message: data.message,
-            total: data.total,
-            processed: data.processed,
-            eta: data.eta,
-            errors: data.errors,
-            phase: data.phase,
-          });
-        },
-        onComplete: (data) => {
-          setStreamingRanking(data);
-          setProgress(null);
-        },
-        onError: (err) => {
-          setSnackbar({ open: true, message: `Error: ${err.message}`, severity: "error" });
-          setProgress(null);
-        },
-      });
-      
-      // Handle result from Promise (especially for cached JSON responses)
-      if (result) {
-        setStreamingRanking(result);
-        setProgress(null);
-      }
-    } catch (err) {
-      setSnackbar({ open: true, message: `Error: ${err.message}`, severity: "error" });
-      setProgress(null);
-    }
-  };
-
-  const handleFundSearch = () => {
-    if (!fundInput) return;
-    dispatch(clearFund());
-    dispatch(fetchFundDetails(fundInput));
-    dispatch(fetchFundSectorRanking(fundInput));
-  };
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at top, #FCE8C8 0%, #F5F0E6 45%, #EDF2F3 100%)",
+          "radial-gradient(circle at top, #F9E6D7 0%, #F6F1EC 45%, #ECF0EF 100%)",
       }}
     >
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={{ background: "transparent", color: "#0F4C5C" }}
-      >
-        <Container maxWidth="lg" sx={{ py: 2 }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton
-              sx={{
-                background: "#FFE3C2",
-                color: "#0F4C5C",
-                borderRadius: 3,
-              }}
-            >
-              <DashboardIcon />
-            </IconButton>
-            <Box>
-              <Typography variant="h2">MF Analyser</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Sector intelligence for Indian mutual funds
-              </Typography>
-            </Box>
-          </Stack>
+      <AppBar position="sticky" elevation={0} sx={{ background: "transparent" }}>
+        <Container maxWidth="xl" sx={{ py: 2 }}>
+          <Paper sx={{ p: 1.5, backdropFilter: "blur(14px)" }}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  badgeContent={<Chip size="small" label="Live" color="success" />}
+                >
+                  <Avatar
+                    variant="rounded"
+                    sx={{
+                      bgcolor: "#FDE1C1",
+                      color: "#1F5460",
+                      width: 48,
+                      height: 48,
+                    }}
+                  >
+                    <InsightsIcon />
+                  </Avatar>
+                </Badge>
+                <Box>
+                  <Typography variant="h2">MFkin Analyser</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Sector intelligence and fund scouting
+                  </Typography>
+                </Box>
+              </Stack>
+              <Box flex={1} />
+              <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems="center">
+                <ToggleButtonGroup
+                  value={searchMode}
+                  exclusive
+                  onChange={(_, value) => value && setSearchMode(value)}
+                  size="small"
+                >
+                  <ToggleButton value="sector">Sector</ToggleButton>
+                  <ToggleButton value="fund">Fund</ToggleButton>
+                </ToggleButtonGroup>
+                <TextField
+                  size="small"
+                  placeholder="Search fund, AMC, or sector"
+                  value={globalSearch}
+                  onChange={(event) => setGlobalSearch(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") handleGlobalSearch();
+                  }}
+                  sx={{ minWidth: 280 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <ToggleButtonGroup
+                  value={timeframe}
+                  exclusive
+                  onChange={(_, value) => value && setTimeframe(value)}
+                  size="small"
+                >
+                  {timeframes.map((item) => (
+                    <ToggleButton key={item.key} value={item.key}>
+                      {item.label}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+                <Button
+                  variant="contained"
+                  onClick={handleGlobalSearch}
+                  disabled={!globalSearch.trim()}
+                >
+                  Search
+                </Button>
+                <IconButton
+                  onClick={() => selectedSector && handleSectorSelect(selectedSector)}
+                  sx={{ border: "1px solid rgba(31,84,96,0.12)" }}
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </Stack>
+            </Stack>
+          </Paper>
         </Container>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Grid container spacing={4} alignItems="stretch">
-          <Grid item xs={12} md={5}>
-            <Paper elevation={0} sx={{ p: 3, height: "100%" }}>
-              <Stack spacing={2}>
-                <Typography variant="h1">
-                  Decode sectors. Discover leaders.
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Search by sector or mutual fund to surface top performers across
-                  1Y, 3Y, and 5Y return windows.
-                </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {highlightedSectors.map((sector) => (
-                    <Chip
-                      key={sector}
-                      label={sector}
-                      onClick={() => {
-                        setSectorInput(sector);
-                        setTab("sector");
-                      }}
-                    />
-                  ))}
-                </Stack>
-              </Stack>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={7}>
-            <Paper elevation={0} sx={{ p: 3, height: "100%" }}>
-              <Tabs
-                value={tab}
-                onChange={(_, value) => setTab(value)}
-                textColor="primary"
-                indicatorColor="primary"
-                sx={{ mb: 2 }}
-              >
-                <Tab label="Sector ranking" value="sector" />
-                <Tab label="Fund lookup" value="fund" />
-              </Tabs>
-
-              {tab === "sector" && (
-                <Stack spacing={2}>
-                  <FormControl fullWidth>
-                    <InputLabel id="sector-select-label">Select sector</InputLabel>
-                    <Select
-                      labelId="sector-select-label"
-                      value={sectorInput}
-                      label="Select sector"
-                      onChange={(event) => setSectorInput(event.target.value)}
-                    >
-                      {list.map((sector) => (
-                        <MenuItem key={sector} value={sector}>
-                          {sector}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Button
-                    variant="contained"
-                    endIcon={<SearchIcon />}
-                    onClick={handleSectorSearch}
-                  >
-                    Get sector ranking
-                  </Button>
-                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography variant="body2" color="text.secondary">
-                        {listStatus === "loading"
-                          ? "Loading sector catalog..."
-                          : `${list.length} sectors available`}
-                      </Typography>
-                      {preloadStatus?.preloaded && (
-                        <Tooltip title={`Last refreshed: ${formatPreloadDate(preloadStatus.metadata?.generatedAt)}`}>
-                          <CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />
-                        </Tooltip>
-                      )}
-                    </Stack>
-                    <Tooltip title={preloadStatus?.preloaded 
-                      ? `${preloadStatus.metadata?.classifiedFunds || 0} funds pre-classified. Click to refresh.` 
-                      : "Pre-compute sector data for faster searches"}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        startIcon={isPreloading ? <CircularProgress size={16} /> : <RefreshIcon />}
-                        onClick={handlePreload}
-                        disabled={isPreloading}
-                        sx={{ minWidth: 120 }}
-                      >
-                        {isPreloading ? "Refreshing..." : "Refresh Data"}
-                      </Button>
-                    </Tooltip>
-                  </Stack>
-                </Stack>
-              )}
-
-              {tab === "fund" && (
-                <Stack spacing={2}>
-                  <TextField
-                    label="Fund name or code"
-                    placeholder="HDFC Pharma Fund or 120466"
-                    value={fundInput}
-                    onChange={(event) => setFundInput(event.target.value)}
-                    fullWidth
-                  />
-                  <Button
-                    variant="contained"
-                    endIcon={<InsightsIcon />}
-                    onClick={handleFundSearch}
-                  >
-                    Get fund details
-                  </Button>
-                </Stack>
-              )}
-            </Paper>
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 4 }} />
-
-        {/* Loading overlay for sector ranking with progress */}
-        <Backdrop
+      <Container maxWidth="xl" sx={{ py: 2 }}>
+        {/* Sector Selector - Horizontal Scrollable */}
+        <Paper
           sx={{
-            color: "#fff",
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-            flexDirection: "column",
-            gap: 2,
+            p: 2,
+            mb: 2,
+            animation: "floatIn 0.6s ease",
+            animationFillMode: "both",
           }}
-          open={progress !== null || rankingStatus === "loading" || sectorRankingStatus === "loading"}
         >
-          {progress ? (
-            <Stack spacing={2} alignItems="center" sx={{ width: "80%", maxWidth: 400 }}>
-              <Typography variant="h6">
-                {progress.message || "Analyzing sector funds..."}
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, minWidth: 80 }}>
+              Sectors
+            </Typography>
+            <TextField
+              size="small"
+              placeholder="Search..."
+              value={sectorSearch}
+              onChange={(event) => setSectorSearch(event.target.value)}
+              sx={{ width: 150 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Stack>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 1,
+            }}
+          >
+            {sectorList.map((sector) => (
+              <Chip
+                key={sector}
+                icon={getSectorIcon(sector)}
+                label={sector}
+                onClick={() => handleSectorSelect(sector)}
+                variant={sector === selectedSector ? "filled" : "outlined"}
+                sx={{
+                  fontWeight: sector === selectedSector ? 600 : 400,
+                  bgcolor: sector === selectedSector ? "rgba(31,84,96,0.15)" : "transparent",
+                  "&:hover": {
+                    bgcolor: "rgba(31,84,96,0.1)",
+                  },
+                }}
+              />
+            ))}
+          </Box>
+        </Paper>
+
+        {/* Sector Stats & Filters Row */}
+        <Paper
+          sx={{
+            p: 2,
+            mb: 2,
+            animation: "floatIn 0.6s ease",
+            animationDelay: "0.05s",
+            animationFillMode: "both",
+          }}
+        >
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
+            <Box flex={1}>
+              <Typography variant="h1">{activeSectorName || "Select a sector"}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {activeRanking?.generatedAt
+                  ? `Last refreshed ${new Date(activeRanking.generatedAt).toLocaleString()}`
+                  : "Select a sector above to see rankings"}
               </Typography>
-              
-              {/* Progress bar */}
-              <Box sx={{ width: "100%", position: "relative" }}>
-                <Box
-                  sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: "rgba(255,255,255,0.2)",
-                    overflow: "hidden",
+            </Box>
+            <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center" useFlexGap>
+              <Chip label={`${activeRanking?.totalFunds ?? 0} funds`} size="small" />
+              <Chip label={`Avg: ${formatReturn(averageReturn)}`} size="small" />
+              <Chip label={`P/E: ${averagePe === null ? "—" : averagePe.toFixed(1)}`} size="small" />
+              <Chip label={`P/B: ${averagePb === null ? "—" : averagePb.toFixed(1)}`} size="small" />
+              <Divider orientation="vertical" flexItem />
+              {planFilters.map((plan) => (
+                <Chip
+                  key={plan.key}
+                  label={plan.label}
+                  size="small"
+                  variant={activePlans.includes(plan.key) ? "filled" : "outlined"}
+                  onClick={() => {
+                    setActivePlans((prev) =>
+                      prev.includes(plan.key)
+                        ? prev.filter((item) => item !== plan.key)
+                        : [...prev, plan.key]
+                    );
                   }}
-                >
-                  <Box
-                    sx={{
-                      height: "100%",
-                      width: `${progress.percent || 0}%`,
-                      backgroundColor: "#4caf50",
-                      borderRadius: 4,
-                      transition: "width 0.3s ease",
-                    }}
-                  />
-                </Box>
-              </Box>
-              
-              {/* Progress details */}
-              <Stack direction="row" spacing={3} justifyContent="center">
-                <Typography variant="body2">
-                  {progress.percent || 0}%
+                />
+              ))}
+              <TextField
+                size="small"
+                placeholder="Filter funds..."
+                value={tableFilter}
+                onChange={(event) => setTableFilter(event.target.value)}
+                sx={{ width: 160 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
+          </Stack>
+        </Paper>
+
+        {isRankingLoading && (
+          <Paper sx={{ p: 3, mb: 2 }}>
+            <Stack spacing={2}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="subtitle1">
+                  {rankingProgress?.message || `Crunching rankings for ${selectedSector}…`}
                 </Typography>
-                {progress.total > 0 && (
-                  <Typography variant="body2">
-                    {progress.processed || 0} / {progress.total} funds
-                  </Typography>
-                )}
-                {progress.eta > 0 && (
-                  <Typography variant="body2">
-                    ~{progress.eta}s remaining
-                  </Typography>
-                )}
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {rankingProgress?.errors > 0 && (
+                    <Chip label={`${rankingProgress.errors} errors`} size="small" color="warning" />
+                  )}
+                  <Chip 
+                    label={rankingProgress?.phase === "ranking" ? "Finishing" : "Processing"} 
+                    size="small" 
+                    color="primary" 
+                  />
+                </Stack>
               </Stack>
               
-              {progress.errors > 0 && (
-                <Typography variant="caption" sx={{ color: "warning.light" }}>
-                  {progress.errors} fund(s) skipped due to errors
-                </Typography>
+              <LinearProgress 
+                variant={rankingProgress?.percent ? "determinate" : "indeterminate"} 
+                value={rankingProgress?.percent || 0} 
+                sx={{ height: 10, borderRadius: 5 }} 
+              />
+              
+              {rankingProgress?.total && (
+                <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
+                  <Typography variant="h4" color="primary.main">
+                    {rankingProgress.processed || 0} / {rankingProgress.total}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    funds processed
+                  </Typography>
+                  {rankingProgress?.eta > 0 && (
+                    <Chip 
+                      label={`~${rankingProgress.eta}s remaining`} 
+                      size="small" 
+                      variant="outlined" 
+                    />
+                  )}
+                </Stack>
               )}
+              
+              <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 1 }}>
+                <Chip 
+                  icon={<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: rankingProgress?.phase === "loading_funds" ? "primary.main" : "success.main" }} />}
+                  label="Load funds" 
+                  size="small"
+                  variant={rankingProgress?.phase === "loading_funds" ? "filled" : "outlined"}
+                />
+                <Chip 
+                  icon={<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: rankingProgress?.phase === "processing" ? "primary.main" : (rankingProgress?.processed ? "success.main" : "grey.300") }} />}
+                  label="Fetch returns" 
+                  size="small"
+                  variant={rankingProgress?.phase === "processing" ? "filled" : "outlined"}
+                />
+                <Chip 
+                  icon={<Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: rankingProgress?.phase === "ranking" ? "primary.main" : "grey.300" }} />}
+                  label="Build rankings" 
+                  size="small"
+                  variant={rankingProgress?.phase === "ranking" ? "filled" : "outlined"}
+                />
+              </Stack>
             </Stack>
-          ) : (
-            <>
-              <CircularProgress color="inherit" />
-              <Typography variant="h6">
-                {rankingStatus === "loading" 
-                  ? "Analyzing sector funds... This may take a moment."
-                  : "Loading fund sector ranking..."}
-              </Typography>
-            </>
-          )}
-        </Backdrop>
-
-        {tab === "sector" && (
-          <Stack spacing={3}>
-            {(streamingRanking || ranking) && (
-              <>
-                <Typography variant="h2">{(streamingRanking || ranking).sector}</Typography>
-                <TopFundsPanel topFunds={(streamingRanking || ranking).topFunds} />
-                <RankingTable rankings={(streamingRanking || ranking).rankings} />
-              </>
-            )}
-          </Stack>
+          </Paper>
         )}
 
-        {tab === "fund" && (
-          <Stack spacing={3}>
-            {detailsStatus === "loading" && (
-              <Typography variant="body1">Loading fund details...</Typography>
-            )}
-            {details && (
-              <Paper elevation={0} sx={{ p: 3 }}>
-                <Stack spacing={1}>
-                  <Typography variant="h2">{details.schemeName}</Typography>
-                  <Typography variant="subtitle1" color="text.secondary">
-                    Scheme code: {details.schemeCode}
-                  </Typography>
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Chip label={`Sector: ${details.sector || "Unknown"}`} />
-                    <Chip label={`NAV: ${details.latestNav || "N/A"}`} />
-                    <Chip label={`NAV Date: ${details.navDate || "N/A"}`} />
-                  </Stack>
-                  <Stack direction="row" spacing={2} flexWrap="wrap" sx={{ mt: 2 }}>
-                    <Chip label={`1Y: ${formatReturn(details.returns?.year1)}`} />
-                    <Chip label={`3Y: ${formatReturn(details.returns?.year3)}`} />
-                    <Chip label={`5Y: ${formatReturn(details.returns?.year5)}`} />
-                  </Stack>
-                </Stack>
-              </Paper>
-            )}
+        {/* Partial loading indicator - shown while inactive funds are loading */}
+        {isPartialLoading && activeRanking && (
+          <Paper sx={{ p: 2, mb: 2, bgcolor: "info.light" }}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Typography variant="body2" color="info.dark">
+                Showing {activeRanking.totalFunds} active funds. Loading {activeRanking.pendingInactive || 0} inactive funds in background...
+              </Typography>
+              <LinearProgress sx={{ flex: 1, height: 6, borderRadius: 3 }} />
+            </Stack>
+          </Paper>
+        )}
 
-            {sectorRankingStatus === "loading" && (
-              <Typography variant="body1">Loading sector ranking...</Typography>
-            )}
-            {sectorRanking && (
-              <>
-                <Typography variant="h2">
-                  {sectorRanking.fund?.sector} sector ranking
+        {/* Top Funds & Quick Insights */}
+        {activeRanking && (
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            {/* Top Funds Panel */}
+            <Grid item xs={12} md={8}>
+              <TopFundsPanel
+                topFunds={activeRanking.topFunds}
+                activeTimeframe={timeframe}
+              />
+            </Grid>
+
+            {/* Quick Insights Column */}
+            <Grid item xs={12} md={4}>
+              <Stack spacing={2}>
+                <Paper sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Top AUM in {activeSectorName}</Typography>
+                  <Stack spacing={1}>
+                    {topAumFunds.length === 0 && (
+                      <Typography variant="caption" color="text.secondary">No AUM data</Typography>
+                    )}
+                    {topAumFunds.slice(0, 4).map((fund) => (
+                      <Stack
+                        key={fund.schemeCode}
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <Typography variant="body2" sx={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {fund.schemeName?.substring(0, 35)}
+                        </Typography>
+                        <Chip label={formatAum(fund.metrics?.aum)} size="small" />
+                      </Stack>
+                    ))}
+                  </Stack>
+                </Paper>
+
+                <Paper sx={{ p: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Lowest Expense Ratio</Typography>
+                  <Stack spacing={1}>
+                    {lowestExpense.length === 0 && (
+                      <Typography variant="caption" color="text.secondary">No expense data</Typography>
+                    )}
+                    {lowestExpense.slice(0, 4).map((fund) => (
+                      <Stack
+                        key={fund.schemeCode}
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <Typography variant="body2" sx={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {fund.schemeName?.substring(0, 35)}
+                        </Typography>
+                        <Chip label={`${fund.metrics?.expenseRatio?.toFixed?.(2) ?? "—"}%`} size="small" />
+                      </Stack>
+                    ))}
+                  </Stack>
+                </Paper>
+              </Stack>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* Fund Details Panel (when searching a specific fund) */}
+        {detailsStatus === "loading" && (
+          <Paper sx={{ p: 3, mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              Fetching fund details…
+            </Typography>
+            <LinearProgress />
+          </Paper>
+        )}
+
+        {details && (
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems="flex-start">
+              <Box flex={1}>
+                <Typography variant="h3">{details.schemeName}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Code: {details.schemeCode} · {details.meta?.fund_house || ""}
                 </Typography>
-                <TopFundsPanel topFunds={sectorRanking.sectorRanking?.topFunds} />
-                <RankingTable rankings={sectorRanking.sectorRanking?.rankings} />
-              </>
-            )}
-          </Stack>
+              </Box>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Chip label={`NAV: ${details.latestNav || "—"}`} />
+                <Chip label={`1Y: ${formatReturn(details.returns?.year1)}`} />
+                <Chip label={`3Y: ${formatReturn(details.returns?.year3)}`} />
+                <Chip label={`5Y: ${formatReturn(details.returns?.year5)}`} />
+                <Chip label={`AUM: ${formatAum(details.metrics?.aum)}`} />
+                <Chip label={`P/E: ${details.metrics?.peRatio ?? "—"}`} />
+              </Stack>
+            </Stack>
+          </Paper>
         )}
       </Container>
 
-      {/* Snackbar for preload notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          variant="filled"
+      {/* Full-width ranking table section */}
+      {activeRanking && (
+        <Box
+          sx={{
+            width: "100%",
+            px: 2,
+            pb: 4,
+            animation: "floatIn 0.6s ease",
+            animationDelay: "0.2s",
+            animationFillMode: "both",
+          }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+          <RankingTable
+            rows={filteredRows}
+            timeframeLabel={timeframes.find((item) => item.key === timeframe)?.label}
+            note="AUM and ratios are sourced from Kuvera when available. Click column headers to sort."
+          />
+        </Box>
+      )}
     </Box>
   );
 };
