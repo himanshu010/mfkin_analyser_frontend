@@ -14,8 +14,18 @@ export const lightTheme = createTheme({
   },
   typography: {
     fontFamily: "'Manrope', system-ui, sans-serif",
-    h1: { fontFamily: "'Sora', sans-serif", fontWeight: 700, letterSpacing: '-0.02em', fontSize: '2.4rem' },
-    h2: { fontFamily: "'Sora', sans-serif", fontWeight: 600, letterSpacing: '-0.01em', fontSize: '1.8rem' },
+    h1: {
+      fontFamily: "'Sora', sans-serif",
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+      fontSize: '2.4rem',
+    },
+    h2: {
+      fontFamily: "'Sora', sans-serif",
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+      fontSize: '1.8rem',
+    },
     h3: { fontFamily: "'Sora', sans-serif", fontWeight: 600, fontSize: '1.2rem' },
     subtitle1: { fontWeight: 600 },
     button: { fontWeight: 600, textTransform: 'none' },
@@ -25,16 +35,25 @@ export const lightTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: { backgroundColor: '#F6F1EC' },
-        '@keyframes floatIn': { from: { opacity: 0, transform: 'translateY(16px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+        '@keyframes floatIn': {
+          from: { opacity: 0, transform: 'translateY(16px)' },
+          to: { opacity: 1, transform: 'translateY(0)' },
+        },
       },
     },
     MuiPaper: {
       styleOverrides: {
-        root: { borderRadius: 24, border: '1px solid rgba(31, 84, 96, 0.08)', boxShadow: '0 18px 45px rgba(23, 39, 43, 0.08)' },
+        root: {
+          borderRadius: 24,
+          border: '1px solid rgba(31, 84, 96, 0.08)',
+          boxShadow: '0 18px 45px rgba(23, 39, 43, 0.08)',
+        },
       },
     },
     MuiButton: { styleOverrides: { root: { borderRadius: 999, paddingInline: 22 } } },
-    MuiToggleButton: { styleOverrides: { root: { borderRadius: 999, textTransform: 'none', fontWeight: 600 } } },
+    MuiToggleButton: {
+      styleOverrides: { root: { borderRadius: 999, textTransform: 'none', fontWeight: 600 } },
+    },
     MuiChip: { styleOverrides: { root: { borderRadius: 999, fontWeight: 600 } } },
     MuiLinearProgress: {
       styleOverrides: {
@@ -60,8 +79,18 @@ export const darkTheme = createTheme({
   },
   typography: {
     fontFamily: "'Manrope', system-ui, sans-serif",
-    h1: { fontFamily: "'Sora', sans-serif", fontWeight: 700, letterSpacing: '-0.02em', fontSize: '2.4rem' },
-    h2: { fontFamily: "'Sora', sans-serif", fontWeight: 600, letterSpacing: '-0.01em', fontSize: '1.8rem' },
+    h1: {
+      fontFamily: "'Sora', sans-serif",
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+      fontSize: '2.4rem',
+    },
+    h2: {
+      fontFamily: "'Sora', sans-serif",
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+      fontSize: '1.8rem',
+    },
     h3: { fontFamily: "'Sora', sans-serif", fontWeight: 600, fontSize: '1.2rem' },
     subtitle1: { fontWeight: 600 },
     button: { fontWeight: 600, textTransform: 'none' },
@@ -71,16 +100,26 @@ export const darkTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: { backgroundColor: '#121212' },
-        '@keyframes floatIn': { from: { opacity: 0, transform: 'translateY(16px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+        '@keyframes floatIn': {
+          from: { opacity: 0, transform: 'translateY(16px)' },
+          to: { opacity: 1, transform: 'translateY(0)' },
+        },
       },
     },
     MuiPaper: {
       styleOverrides: {
-        root: { borderRadius: 24, border: '1px solid rgba(77, 208, 225, 0.15)', boxShadow: '0 18px 45px rgba(0, 0, 0, 0.4)', backgroundColor: '#1E1E1E' },
+        root: {
+          borderRadius: 24,
+          border: '1px solid rgba(77, 208, 225, 0.15)',
+          boxShadow: '0 18px 45px rgba(0, 0, 0, 0.4)',
+          backgroundColor: '#1E1E1E',
+        },
       },
     },
     MuiButton: { styleOverrides: { root: { borderRadius: 999, paddingInline: 22 } } },
-    MuiToggleButton: { styleOverrides: { root: { borderRadius: 999, textTransform: 'none', fontWeight: 600 } } },
+    MuiToggleButton: {
+      styleOverrides: { root: { borderRadius: 999, textTransform: 'none', fontWeight: 600 } },
+    },
     MuiChip: { styleOverrides: { root: { borderRadius: 999, fontWeight: 600 } } },
     MuiLinearProgress: {
       styleOverrides: {
@@ -107,9 +146,26 @@ export const funkyTheme = createTheme({
   },
   typography: {
     fontFamily: "'Manrope', system-ui, sans-serif",
-    h1: { fontFamily: "'Sora', sans-serif", fontWeight: 700, letterSpacing: '-0.02em', fontSize: '2.4rem', textShadow: '0 0 20px rgba(0, 245, 212, 0.5)' },
-    h2: { fontFamily: "'Sora', sans-serif", fontWeight: 600, letterSpacing: '-0.01em', fontSize: '1.8rem', textShadow: '0 0 15px rgba(0, 245, 212, 0.4)' },
-    h3: { fontFamily: "'Sora', sans-serif", fontWeight: 600, fontSize: '1.2rem', textShadow: '0 0 10px rgba(0, 245, 212, 0.3)' },
+    h1: {
+      fontFamily: "'Sora', sans-serif",
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+      fontSize: '2.4rem',
+      textShadow: '0 0 20px rgba(0, 245, 212, 0.5)',
+    },
+    h2: {
+      fontFamily: "'Sora', sans-serif",
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+      fontSize: '1.8rem',
+      textShadow: '0 0 15px rgba(0, 245, 212, 0.4)',
+    },
+    h3: {
+      fontFamily: "'Sora', sans-serif",
+      fontWeight: 600,
+      fontSize: '1.2rem',
+      textShadow: '0 0 10px rgba(0, 245, 212, 0.3)',
+    },
     subtitle1: { fontWeight: 600 },
     button: { fontWeight: 600, textTransform: 'none' },
   },
@@ -117,12 +173,19 @@ export const funkyTheme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
-        body: { 
-          backgroundColor: '#0A0A12', 
-          backgroundImage: 'radial-gradient(ellipse at top, #1A1A35 0%, #0A0A12 60%), radial-gradient(circle at 80% 80%, rgba(247, 37, 133, 0.1) 0%, transparent 50%)',
+        body: {
+          backgroundColor: '#0A0A12',
+          backgroundImage:
+            'radial-gradient(ellipse at top, #1A1A35 0%, #0A0A12 60%), radial-gradient(circle at 80% 80%, rgba(247, 37, 133, 0.1) 0%, transparent 50%)',
         },
-        '@keyframes floatIn': { from: { opacity: 0, transform: 'translateY(16px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
-        '@keyframes neonPulse': { '0%, 100%': { filter: 'brightness(1)' }, '50%': { filter: 'brightness(1.15)' } },
+        '@keyframes floatIn': {
+          from: { opacity: 0, transform: 'translateY(16px)' },
+          to: { opacity: 1, transform: 'translateY(0)' },
+        },
+        '@keyframes neonPulse': {
+          '0%, 100%': { filter: 'brightness(1)' },
+          '50%': { filter: 'brightness(1.15)' },
+        },
       },
     },
     MuiPaper: {
@@ -130,7 +193,8 @@ export const funkyTheme = createTheme({
         root: {
           borderRadius: 20,
           border: '1px solid rgba(0, 245, 212, 0.3)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 245, 212, 0.15), inset 0 1px 0 rgba(0, 245, 212, 0.1)',
+          boxShadow:
+            '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 245, 212, 0.15), inset 0 1px 0 rgba(0, 245, 212, 0.1)',
           backgroundColor: 'rgba(18, 18, 42, 0.95)',
           backdropFilter: 'blur(12px)',
         },
@@ -153,7 +217,7 @@ export const funkyTheme = createTheme({
           fontWeight: 700,
           textShadow: '0 0 10px rgba(255, 255, 255, 0.6)',
           boxShadow: '0 4px 20px rgba(247, 37, 133, 0.5), 0 0 30px rgba(0, 245, 212, 0.3)',
-          '&:hover': { 
+          '&:hover': {
             boxShadow: '0 6px 35px rgba(247, 37, 133, 0.8), 0 0 50px rgba(0, 245, 212, 0.5)',
             transform: 'translateY(-2px)',
           },
@@ -163,9 +227,9 @@ export const funkyTheme = createTheme({
           borderWidth: 2,
           color: '#00F5D4',
           boxShadow: '0 0 15px rgba(0, 245, 212, 0.2)',
-          '&:hover': { 
-            borderColor: '#F72585', 
-            color: '#F72585', 
+          '&:hover': {
+            borderColor: '#F72585',
+            color: '#F72585',
             backgroundColor: 'rgba(247, 37, 133, 0.1)',
             boxShadow: '0 0 25px rgba(247, 37, 133, 0.4)',
           },
@@ -189,9 +253,9 @@ export const funkyTheme = createTheme({
           fontWeight: 600,
           color: '#C0C0C0',
           borderColor: 'transparent',
-          '&.Mui-selected': { 
-            backgroundColor: 'rgba(0, 245, 212, 0.25)', 
-            borderColor: '#00F5D4', 
+          '&.Mui-selected': {
+            backgroundColor: 'rgba(0, 245, 212, 0.25)',
+            borderColor: '#00F5D4',
             color: '#00F5D4',
             boxShadow: '0 0 20px rgba(0, 245, 212, 0.4), inset 0 0 10px rgba(0, 245, 212, 0.1)',
             textShadow: '0 0 10px rgba(0, 245, 212, 0.8)',
@@ -204,10 +268,10 @@ export const funkyTheme = createTheme({
     },
     MuiChip: {
       styleOverrides: {
-        root: { 
-          borderRadius: 999, 
-          fontWeight: 600, 
-          backgroundColor: 'rgba(0, 245, 212, 0.12)', 
+        root: {
+          borderRadius: 999,
+          fontWeight: 600,
+          backgroundColor: 'rgba(0, 245, 212, 0.12)',
           border: '1px solid rgba(0, 245, 212, 0.4)',
           boxShadow: '0 0 10px rgba(0, 245, 212, 0.15)',
           transition: 'all 0.2s ease',
@@ -259,14 +323,14 @@ export const funkyTheme = createTheme({
     },
     MuiLinearProgress: {
       styleOverrides: {
-        root: { 
-          height: 10, 
-          borderRadius: 999, 
+        root: {
+          height: 10,
+          borderRadius: 999,
           backgroundColor: 'rgba(0, 245, 212, 0.1)',
           boxShadow: 'inset 0 0 10px rgba(0, 0, 0, 0.5)',
         },
-        bar: { 
-          borderRadius: 999, 
+        bar: {
+          borderRadius: 999,
           backgroundImage: 'linear-gradient(90deg, #F72585, #7B2CBF, #4CC9F0, #00F5D4)',
           boxShadow: '0 0 20px rgba(0, 245, 212, 0.5)',
         },

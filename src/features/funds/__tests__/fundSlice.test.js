@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
-import fundsReducer, {
-  fetchFundDetails,
-  fetchFundSectorRanking,
-  clearFund,
-} from '../fundSlice';
+import fundsReducer, { fetchFundDetails, fetchFundSectorRanking, clearFund } from '../fundSlice';
 import * as api from '../../../app/api';
 
 vi.mock('../../../app/api');

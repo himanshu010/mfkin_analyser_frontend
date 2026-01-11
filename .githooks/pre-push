@@ -1,6 +1,14 @@
 #!/bin/sh
 set -e
 
+printf "Running lint...\n"
+
+npm run lint
+
+printf "Running format check...\n"
+
+npm run format:check
+
 printf "Running tests with coverage...\n"
 
 npm run test:coverage

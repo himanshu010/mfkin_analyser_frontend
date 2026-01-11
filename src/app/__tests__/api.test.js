@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
-import api, { getSectors, getSectorRanking, getFundDetails, getFundSectorRanking, API_BASE, getApiBase } from '../api';
+import api, {
+  getSectors,
+  getSectorRanking,
+  getFundDetails,
+  getFundSectorRanking,
+  API_BASE,
+  getApiBase,
+} from '../api';
 
 // Mock the axios instance methods
 vi.mock('axios', () => {

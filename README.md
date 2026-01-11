@@ -30,6 +30,7 @@ A clean, data-rich dashboard for the MFKIN Analyser backend. Think of it as a ma
 ## Quick Start
 
 Prereqs:
+
 - Node.js 18+ (Vite 5 requirement)
 - npm
 
@@ -60,6 +61,7 @@ The UI expects the backend to expose:
 - `GET /fund/:query/sector`
 
 Key response fields used in UI:
+
 - `rankings.oneYear|threeYear|fiveYear` with `schemeName`, `schemeCode`, `returns`, `metrics`
 - `topFunds` for leaders
 - `fund` + `sectorRanking` for fund lookup
@@ -88,7 +90,7 @@ This frontend does not call data providers directly. All data flows through the 
 - `npm run test` - run tests (watch)
 - `npm run test:run` - run tests once
 - `npm run test:coverage` - run tests with coverage gates
-- `npm run setup:hooks` - enable pre-push coverage gate
+- `npm run setup:hooks` - enable pre-push quality gate (lint/format/coverage)
 
 ## Testing and Coverage
 
@@ -98,9 +100,9 @@ Coverage thresholds are enforced at 100% for lines, branches, functions, and sta
 npm run test:coverage
 ```
 
-## Git Hooks (Pre-Push Coverage Gate)
+## Git Hooks (Pre-Push Quality Gate)
 
-A pre-push hook runs `npm run test:coverage`. If coverage is below 100%, the push is blocked.
+A pre-push hook runs `npm run lint`, `npm run format:check`, and `npm run test:coverage`. If any fail (including coverage below 100%), the push is blocked.
 
 Set it up in a fresh clone:
 
@@ -141,9 +143,9 @@ Host the `dist/` folder on any static hosting service (Netlify, Vercel, S3, etc.
 
 ## Contributing
 
-1) Keep coverage at 100% (lines, branches, functions).
-2) Run format + lint before pushing.
-3) Keep UI consistent with the existing visual language.
+1. Keep coverage at 100% (lines, branches, functions).
+2. Run format + lint before pushing.
+3. Keep UI consistent with the existing visual language.
 
 ## License
 

@@ -85,7 +85,6 @@ describe('RankingTable', () => {
     timeframeLabel: '1 Year',
   };
 
-
   it('formatPercent returns dash for null values', () => {
     expect(formatPercent(null)).toBe('—');
     expect(formatPercent(undefined)).toBe('—');
@@ -392,11 +391,24 @@ describe('RankingTable', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });
 
-
   it('handles equal return values when sorting', () => {
     const equalRows = [
-      { rank: 1, schemeCode: '3001', schemeName: 'Equal Fund A', returns: 10, isActive: true, metrics: {} },
-      { rank: 2, schemeCode: '3002', schemeName: 'Equal Fund B', returns: 10, isActive: true, metrics: {} },
+      {
+        rank: 1,
+        schemeCode: '3001',
+        schemeName: 'Equal Fund A',
+        returns: 10,
+        isActive: true,
+        metrics: {},
+      },
+      {
+        rank: 2,
+        schemeCode: '3002',
+        schemeName: 'Equal Fund B',
+        returns: 10,
+        isActive: true,
+        metrics: {},
+      },
     ];
     renderWithProviders(<RankingTable rows={equalRows} timeframeLabel="1Y" />);
     const returnHeader = screen.getByRole('button', { name: /Return/i });
@@ -407,9 +419,30 @@ describe('RankingTable', () => {
 
   it('sorts numeric values correctly - descending order comparison', () => {
     const numericRows = [
-      { rank: 1, schemeCode: '1001', schemeName: 'A', returns: 5, isActive: true, metrics: { aum: 100 } },
-      { rank: 2, schemeCode: '1002', schemeName: 'B', returns: 15, isActive: true, metrics: { aum: 200 } },
-      { rank: 3, schemeCode: '1003', schemeName: 'C', returns: 10, isActive: true, metrics: { aum: 300 } },
+      {
+        rank: 1,
+        schemeCode: '1001',
+        schemeName: 'A',
+        returns: 5,
+        isActive: true,
+        metrics: { aum: 100 },
+      },
+      {
+        rank: 2,
+        schemeCode: '1002',
+        schemeName: 'B',
+        returns: 15,
+        isActive: true,
+        metrics: { aum: 200 },
+      },
+      {
+        rank: 3,
+        schemeCode: '1003',
+        schemeName: 'C',
+        returns: 10,
+        isActive: true,
+        metrics: { aum: 300 },
+      },
     ];
     renderWithProviders(<RankingTable rows={numericRows} timeframeLabel="1Y" />);
     // Click to sort by returns descending
@@ -440,7 +473,7 @@ describe('RankingTable', () => {
     const headerCells = screen.getAllByRole('columnheader');
     expect(headerCells.length).toBeGreaterThan(5);
     // Find any columnheader that doesn't have a button inside (non-sortable columns)
-    const nonSortableHeaders = headerCells.filter(cell => !cell.querySelector('button'));
+    const nonSortableHeaders = headerCells.filter((cell) => !cell.querySelector('button'));
     // There should be at least one non-sortable column (like 'Active')
     expect(nonSortableHeaders.length).toBeGreaterThan(0);
   });
@@ -465,8 +498,6 @@ describe('RankingTable', () => {
     // Reset page to 0 - Fund 1 should still be visible
     expect(screen.getByText('Fund 1')).toBeInTheDocument();
   });
-
-
 
   it('handles zero return and alpha without positive/negative classes', () => {
     const rows = [

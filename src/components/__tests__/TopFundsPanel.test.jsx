@@ -43,7 +43,9 @@ const mockTopFunds = {
 
 describe('TopFundsPanel', () => {
   it('returns null when topFunds is not provided', () => {
-    const { container } = renderWithTheme(<TopFundsPanel topFunds={null} activeTimeframe="oneYear" />);
+    const { container } = renderWithTheme(
+      <TopFundsPanel topFunds={null} activeTimeframe="oneYear" />
+    );
     expect(container.firstChild).toBeNull();
   });
 
@@ -115,17 +117,33 @@ describe('TopFundsPanel', () => {
 
   it('handles undefined expense ratio', () => {
     const fundsWithUndefinedExpense = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: 10, metrics: { aum: 100, expenseRatio: undefined, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: 10,
+          metrics: { aum: 100, expenseRatio: undefined, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       threeYear: [],
       fiveYear: [],
     };
-    renderWithTheme(<TopFundsPanel topFunds={fundsWithUndefinedExpense} activeTimeframe="oneYear" />);
+    renderWithTheme(
+      <TopFundsPanel topFunds={fundsWithUndefinedExpense} activeTimeframe="oneYear" />
+    );
     expect(screen.getByText('Expense: —')).toBeInTheDocument();
   });
 
   it('handles null AUM', () => {
     const fundsWithNullAum = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: 10, metrics: { aum: null, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: 10,
+          metrics: { aum: null, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       threeYear: [],
       fiveYear: [],
     };
@@ -135,7 +153,14 @@ describe('TopFundsPanel', () => {
 
   it('formats large AUM values correctly', () => {
     const fundsWithLargeAum = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: 10, metrics: { aum: 15000, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: 10,
+          metrics: { aum: 15000, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       threeYear: [],
       fiveYear: [],
     };
@@ -145,7 +170,14 @@ describe('TopFundsPanel', () => {
 
   it('formats medium AUM values correctly', () => {
     const fundsWithMediumAum = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: 10, metrics: { aum: 5000, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: 10,
+          metrics: { aum: 5000, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       threeYear: [],
       fiveYear: [],
     };
@@ -167,7 +199,14 @@ describe('TopFundsPanel', () => {
 
   it('handles null returns', () => {
     const fundsWithNullReturns = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: null, metrics: { aum: 100, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: null,
+          metrics: { aum: 100, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       threeYear: [],
       fiveYear: [],
     };
@@ -177,17 +216,33 @@ describe('TopFundsPanel', () => {
 
   it('handles undefined returns', () => {
     const fundsWithUndefinedReturns = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: undefined, metrics: { aum: 100, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: undefined,
+          metrics: { aum: 100, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       threeYear: [],
       fiveYear: [],
     };
-    renderWithTheme(<TopFundsPanel topFunds={fundsWithUndefinedReturns} activeTimeframe="oneYear" />);
+    renderWithTheme(
+      <TopFundsPanel topFunds={fundsWithUndefinedReturns} activeTimeframe="oneYear" />
+    );
     expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('handles NaN AUM value', () => {
     const fundsWithNaNAum = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: 10, metrics: { aum: 'not a number', expenseRatio: 0.5, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: 10,
+          metrics: { aum: 'not a number', expenseRatio: 0.5, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       threeYear: [],
       fiveYear: [],
     };
@@ -197,7 +252,14 @@ describe('TopFundsPanel', () => {
 
   it('handles undefined timeframe key in topFunds', () => {
     const fundsWithMissingKey = {
-      oneYear: [{ schemeCode: '1', schemeName: 'Test', returns: 10, metrics: { aum: 100, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 } }],
+      oneYear: [
+        {
+          schemeCode: '1',
+          schemeName: 'Test',
+          returns: 10,
+          metrics: { aum: 100, expenseRatio: 0.5, peRatio: 15, pbRatio: 2 },
+        },
+      ],
       // threeYear and fiveYear are explicitly undefined (not present)
     };
     renderWithTheme(<TopFundsPanel topFunds={fundsWithMissingKey} activeTimeframe="oneYear" />);

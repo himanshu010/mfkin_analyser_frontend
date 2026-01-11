@@ -72,7 +72,7 @@
 
 .top-funds-card__return {
   flex-shrink: 0;
-  color: #1F5460 !important;
+  color: #1f5460 !important;
 }
 
 .top-funds-card__aum-label {
@@ -91,21 +91,21 @@
 [data-theme='dark'] {
   .top-funds-card {
     &--one-year.MuiPaper-root {
-      background: linear-gradient(135deg, #3D3D3D 0%, #5A4A2F 50%, #4A4A4A 100%) !important;
+      background: linear-gradient(135deg, #3d3d3d 0%, #5a4a2f 50%, #4a4a4a 100%) !important;
       box-shadow: 0 8px 32px rgba(255, 183, 77, 0.2) !important;
-      color: #E0E0E0 !important;
+      color: #e0e0e0 !important;
     }
 
     &--three-year.MuiPaper-root {
-      background: linear-gradient(135deg, #2D2D2D 0%, #4A4A4A 50%, #3D3D3D 100%) !important;
+      background: linear-gradient(135deg, #2d2d2d 0%, #4a4a4a 50%, #3d3d3d 100%) !important;
       box-shadow: 0 8px 32px rgba(158, 158, 158, 0.15) !important;
-      color: #E0E0E0 !important;
+      color: #e0e0e0 !important;
     }
 
     &--five-year.MuiPaper-root {
-      background: linear-gradient(135deg, #1E3A4A 0%, #2D4A5A 50%, #1E3A4A 100%) !important;
+      background: linear-gradient(135deg, #1e3a4a 0%, #2d4a5a 50%, #1e3a4a 100%) !important;
       box-shadow: 0 8px 32px rgba(77, 208, 225, 0.15) !important;
-      color: #E0E0E0 !important;
+      color: #e0e0e0 !important;
     }
 
     .MuiTypography-colorTextSecondary {
@@ -113,7 +113,7 @@
     }
 
     .top-funds-card__return {
-      color: #4DD0E1 !important;
+      color: #4dd0e1 !important;
     }
   }
 }
@@ -122,31 +122,37 @@
 [data-theme='funky'] {
   .top-funds-card {
     &--one-year.MuiPaper-root {
-      background: linear-gradient(135deg, #1A0A20 0%, #2D1035 100%) !important;
-      box-shadow: 0 0 40px rgba(247, 37, 133, 0.6), inset 0 0 30px rgba(247, 37, 133, 0.1) !important;
-      border: 2px solid #F72585 !important;
-      color: #FFFFFF !important;
+      background: linear-gradient(135deg, #1a0a20 0%, #2d1035 100%) !important;
+      box-shadow:
+        0 0 40px rgba(247, 37, 133, 0.6),
+        inset 0 0 30px rgba(247, 37, 133, 0.1) !important;
+      border: 2px solid #f72585 !important;
+      color: #ffffff !important;
       animation: neonPulse 3s ease-in-out infinite;
     }
 
     &--three-year.MuiPaper-root {
-      background: linear-gradient(135deg, #0A1525 0%, #152540 100%) !important;
-      box-shadow: 0 0 40px rgba(76, 201, 240, 0.6), inset 0 0 30px rgba(76, 201, 240, 0.1) !important;
-      border: 2px solid #4CC9F0 !important;
-      color: #FFFFFF !important;
+      background: linear-gradient(135deg, #0a1525 0%, #152540 100%) !important;
+      box-shadow:
+        0 0 40px rgba(76, 201, 240, 0.6),
+        inset 0 0 30px rgba(76, 201, 240, 0.1) !important;
+      border: 2px solid #4cc9f0 !important;
+      color: #ffffff !important;
       animation: neonPulse 3s ease-in-out infinite 0.5s;
     }
 
     &--five-year.MuiPaper-root {
-      background: linear-gradient(135deg, #0A1A15 0%, #0D2A20 100%) !important;
-      box-shadow: 0 0 40px rgba(0, 245, 212, 0.6), inset 0 0 30px rgba(0, 245, 212, 0.1) !important;
-      border: 2px solid #00F5D4 !important;
-      color: #FFFFFF !important;
+      background: linear-gradient(135deg, #0a1a15 0%, #0d2a20 100%) !important;
+      box-shadow:
+        0 0 40px rgba(0, 245, 212, 0.6),
+        inset 0 0 30px rgba(0, 245, 212, 0.1) !important;
+      border: 2px solid #00f5d4 !important;
+      color: #ffffff !important;
       animation: neonPulse 3s ease-in-out infinite 1s;
     }
 
     .MuiTypography-root {
-      color: #FFFFFF !important;
+      color: #ffffff !important;
     }
 
     .MuiTypography-colorTextSecondary {
@@ -154,24 +160,25 @@
     }
 
     .top-funds-card__return {
-      color: #00F5D4 !important;
+      color: #00f5d4 !important;
       text-shadow: 0 0 15px rgba(0, 245, 212, 1);
     }
 
     &--one-year .top-funds-card__return {
-      color: #F72585 !important;
+      color: #f72585 !important;
       text-shadow: 0 0 15px rgba(247, 37, 133, 1);
     }
 
     &--three-year .top-funds-card__return {
-      color: #4CC9F0 !important;
+      color: #4cc9f0 !important;
       text-shadow: 0 0 15px rgba(76, 201, 240, 1);
     }
   }
 }
 
 @keyframes neonPulse {
-  0%, 100% {
+  0%,
+  100% {
     filter: brightness(1);
   }
   50% {

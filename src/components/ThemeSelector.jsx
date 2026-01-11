@@ -29,9 +29,7 @@ const ThemeSelector = () => {
     >
       {themeOptions.map((option) => (
         <ToggleButton key={option.key} value={option.key} aria-label={option.label}>
-          <Tooltip title={option.label}>
-            {option.icon}
-          </Tooltip>
+          <Tooltip title={option.label}>{option.icon}</Tooltip>
         </ToggleButton>
       ))}
     </ToggleButtonGroup>

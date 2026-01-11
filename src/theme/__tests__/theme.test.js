@@ -80,7 +80,9 @@ describe('theme.js', () => {
     });
 
     it('has progress bar with rainbow gradient', () => {
-      expect(funkyTheme.components.MuiLinearProgress.styleOverrides.bar.backgroundImage).toContain('#F72585');
+      expect(funkyTheme.components.MuiLinearProgress.styleOverrides.bar.backgroundImage).toContain(
+        '#F72585'
+      );
     });
   });
 
