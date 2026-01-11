@@ -31,7 +31,6 @@
 
 .ranking-table__head {
   th {
-    background-color: $bg-table-header !important;
     font-size: 0.75rem;
     font-weight: 600;
     padding: $spacing-sm $spacing-xs;
@@ -50,7 +49,6 @@
   &--sticky {
     position: sticky !important;
     z-index: $z-sticky-header !important;
-    background-color: $bg-table-header !important;
   }
 
   &--rank {
@@ -138,11 +136,7 @@
 
 .ranking-table__row {
   &:hover {
-    background-color: rgba($color-primary, 0.06) !important;
-  }
-
-  &--top-rank {
-    background-color: $bg-top-rank !important;
+    background-color: rgba(31, 84, 96, 0.06) !important;
   }
 
   td {
@@ -178,13 +172,14 @@
   }
 }
 
+// Background classes - theme aware via inherit
 .ranking-table__bg {
   &--white {
-    background-color: #fff !important;
+    background-color: inherit !important;
   }
 
   &--top {
-    background-color: #fdf5ee !important;
+    background-color: rgba(242, 178, 108, 0.15) !important;
   }
 }
 
@@ -192,6 +187,7 @@
   &.MuiChip-root {
     font-weight: 700 !important;
     background-color: $color-secondary !important;
+    color: #1a1a1a !important;
     height: 22px;
     font-size: 0.75rem;
   }
@@ -213,14 +209,14 @@
   font-size: 0.7rem !important;
 }
 
-// Return value colors
+// Return value colors - use brighter colors for visibility
 .ranking-table__return {
   &--positive {
-    color: $color-success !important;
+    color: #2E7D63 !important;
   }
 
   &--negative {
-    color: $color-error !important;
+    color: #C62828 !important;
   }
 }
 
@@ -232,24 +228,24 @@
   }
 
   &--active.MuiChip-root {
-    background-color: $color-success-light !important;
-    color: $color-success !important;
+    background-color: rgba(46, 125, 99, 0.2) !important;
+    color: #2E7D63 !important;
   }
 
   &--inactive.MuiChip-root {
-    background-color: $color-muted !important;
-    color: $text-secondary !important;
+    background-color: rgba(158, 158, 158, 0.2) !important;
+    color: #9E9E9E !important;
   }
 }
 
 // Alpha value colors
 .ranking-table__alpha {
   &--positive {
-    color: $color-success !important;
+    color: #2E7D63 !important;
   }
 
   &--negative {
-    color: $color-error !important;
+    color: #C62828 !important;
   }
 }
 
@@ -260,5 +256,166 @@
 }
 
 .ranking-table__pagination {
-  border-bottom: 1px solid rgba(224, 224, 224, 1);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+// Dark theme text visibility adjustments
+[data-theme='dark'] {
+  .ranking-table__return {
+    &--positive {
+      color: #81C784 !important;
+    }
+
+    &--negative {
+      color: #E57373 !important;
+    }
+  }
+
+  .ranking-table__alpha {
+    &--positive {
+      color: #81C784 !important;
+    }
+
+    &--negative {
+      color: #E57373 !important;
+    }
+  }
+
+  .ranking-table__status-chip {
+    &--active.MuiChip-root {
+      background-color: rgba(129, 199, 132, 0.25) !important;
+      color: #81C784 !important;
+    }
+  }
+
+  .ranking-table__row:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+// Funky theme - Full neon glow effects
+[data-theme='funky'] {
+  .ranking-table {
+    border: 1px solid rgba(0, 245, 212, 0.3);
+    box-shadow: 0 0 30px rgba(0, 245, 212, 0.1), inset 0 0 20px rgba(0, 245, 212, 0.03);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .ranking-table__head {
+    th {
+      color: #00F5D4 !important;
+      text-shadow: 0 0 10px rgba(0, 245, 212, 0.6);
+      background: rgba(0, 245, 212, 0.08) !important;
+      border-bottom: 1px solid rgba(0, 245, 212, 0.3) !important;
+    }
+  }
+
+  .ranking-table__cell {
+    border-bottom: 1px solid rgba(0, 245, 212, 0.1) !important;
+  }
+
+  .ranking-table__return {
+    &--positive {
+      color: #00F5D4 !important;
+      text-shadow: 0 0 8px rgba(0, 245, 212, 0.8);
+    }
+
+    &--negative {
+      color: #F72585 !important;
+      text-shadow: 0 0 8px rgba(247, 37, 133, 0.8);
+    }
+  }
+
+  .ranking-table__alpha {
+    &--positive {
+      color: #06D6A0 !important;
+      text-shadow: 0 0 8px rgba(6, 214, 160, 0.8);
+    }
+
+    &--negative {
+      color: #EF476F !important;
+      text-shadow: 0 0 8px rgba(239, 71, 111, 0.8);
+    }
+  }
+
+  .ranking-table__rank-chip {
+    &.MuiChip-root {
+      background: linear-gradient(135deg, #F72585 0%, #7B2CBF 100%) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 0 15px rgba(247, 37, 133, 0.5);
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .ranking-table__status-chip {
+    &--active.MuiChip-root {
+      background-color: rgba(0, 245, 212, 0.2) !important;
+      color: #00F5D4 !important;
+      border: 1px solid rgba(0, 245, 212, 0.4);
+      box-shadow: 0 0 10px rgba(0, 245, 212, 0.3);
+    }
+
+    &--inactive.MuiChip-root {
+      background-color: rgba(247, 37, 133, 0.15) !important;
+      color: #F72585 !important;
+      border: 1px solid rgba(247, 37, 133, 0.3);
+    }
+  }
+
+  .ranking-table__row {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 245, 212, 0.1) !important;
+      box-shadow: 0 0 25px rgba(0, 245, 212, 0.15);
+    }
+
+    td {
+      color: #E0E0E0;
+    }
+  }
+
+  .ranking-table__body-cell {
+    &--sticky {
+      background-color: rgba(18, 18, 42, 0.98) !important;
+    }
+  }
+
+  .ranking-table__bg {
+    &--top {
+      background: linear-gradient(90deg, rgba(247, 37, 133, 0.15), rgba(123, 44, 191, 0.1)) !important;
+      box-shadow: inset 0 0 20px rgba(247, 37, 133, 0.1);
+    }
+  }
+
+  .ranking-table__fund-name {
+    color: #FFFFFF !important;
+  }
+
+  .ranking-table__fund-manager {
+    color: rgba(0, 245, 212, 0.7) !important;
+  }
+
+  .ranking-table__pagination {
+    border-bottom: 1px solid rgba(0, 245, 212, 0.2);
+    background: rgba(0, 245, 212, 0.05);
+
+    .MuiTablePagination-root {
+      color: #C0C0C0;
+    }
+
+    .MuiIconButton-root {
+      color: #00F5D4;
+      
+      &:hover {
+        background-color: rgba(0, 245, 212, 0.15);
+        box-shadow: 0 0 15px rgba(0, 245, 212, 0.3);
+      }
+    }
+  }
+
+  .ranking-table__note {
+    color: rgba(0, 245, 212, 0.6);
+  }
 }

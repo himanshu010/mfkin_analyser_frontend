@@ -18,19 +18,23 @@
     overflow: hidden;
   }
 
+  // Light theme gradients (default)
   &--one-year.MuiPaper-root {
     background: $gradient-gold !important;
     box-shadow: $shadow-glow-gold !important;
+    color: #1a1a1a !important;
   }
 
   &--three-year.MuiPaper-root {
     background: $gradient-silver !important;
     box-shadow: $shadow-glow-silver !important;
+    color: #1a1a1a !important;
   }
 
   &--five-year.MuiPaper-root {
     background: $gradient-ice !important;
     box-shadow: $shadow-glow-ice !important;
+    color: #1a1a1a !important;
   }
 
   &--active.MuiPaper-root {
@@ -39,6 +43,15 @@
 
   &--inactive.MuiPaper-root {
     border: $border-medium !important;
+  }
+
+  // Override MUI Typography colors inside cards
+  .MuiTypography-root {
+    color: inherit;
+  }
+
+  .MuiTypography-colorTextSecondary {
+    color: rgba(26, 26, 26, 0.7) !important;
   }
 }
 
@@ -59,6 +72,7 @@
 
 .top-funds-card__return {
   flex-shrink: 0;
+  color: #1F5460 !important;
 }
 
 .top-funds-card__aum-label {
@@ -71,4 +85,96 @@
 
 .top-funds-card__tied {
   margin-top: $spacing-sm;
+}
+
+// Dark theme - muted metallic colors
+[data-theme='dark'] {
+  .top-funds-card {
+    &--one-year.MuiPaper-root {
+      background: linear-gradient(135deg, #3D3D3D 0%, #5A4A2F 50%, #4A4A4A 100%) !important;
+      box-shadow: 0 8px 32px rgba(255, 183, 77, 0.2) !important;
+      color: #E0E0E0 !important;
+    }
+
+    &--three-year.MuiPaper-root {
+      background: linear-gradient(135deg, #2D2D2D 0%, #4A4A4A 50%, #3D3D3D 100%) !important;
+      box-shadow: 0 8px 32px rgba(158, 158, 158, 0.15) !important;
+      color: #E0E0E0 !important;
+    }
+
+    &--five-year.MuiPaper-root {
+      background: linear-gradient(135deg, #1E3A4A 0%, #2D4A5A 50%, #1E3A4A 100%) !important;
+      box-shadow: 0 8px 32px rgba(77, 208, 225, 0.15) !important;
+      color: #E0E0E0 !important;
+    }
+
+    .MuiTypography-colorTextSecondary {
+      color: rgba(224, 224, 224, 0.7) !important;
+    }
+
+    .top-funds-card__return {
+      color: #4DD0E1 !important;
+    }
+  }
+}
+
+// Funky theme - neon cyberpunk with dark backgrounds and neon borders/glow
+[data-theme='funky'] {
+  .top-funds-card {
+    &--one-year.MuiPaper-root {
+      background: linear-gradient(135deg, #1A0A20 0%, #2D1035 100%) !important;
+      box-shadow: 0 0 40px rgba(247, 37, 133, 0.6), inset 0 0 30px rgba(247, 37, 133, 0.1) !important;
+      border: 2px solid #F72585 !important;
+      color: #FFFFFF !important;
+      animation: neonPulse 3s ease-in-out infinite;
+    }
+
+    &--three-year.MuiPaper-root {
+      background: linear-gradient(135deg, #0A1525 0%, #152540 100%) !important;
+      box-shadow: 0 0 40px rgba(76, 201, 240, 0.6), inset 0 0 30px rgba(76, 201, 240, 0.1) !important;
+      border: 2px solid #4CC9F0 !important;
+      color: #FFFFFF !important;
+      animation: neonPulse 3s ease-in-out infinite 0.5s;
+    }
+
+    &--five-year.MuiPaper-root {
+      background: linear-gradient(135deg, #0A1A15 0%, #0D2A20 100%) !important;
+      box-shadow: 0 0 40px rgba(0, 245, 212, 0.6), inset 0 0 30px rgba(0, 245, 212, 0.1) !important;
+      border: 2px solid #00F5D4 !important;
+      color: #FFFFFF !important;
+      animation: neonPulse 3s ease-in-out infinite 1s;
+    }
+
+    .MuiTypography-root {
+      color: #FFFFFF !important;
+    }
+
+    .MuiTypography-colorTextSecondary {
+      color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    .top-funds-card__return {
+      color: #00F5D4 !important;
+      text-shadow: 0 0 15px rgba(0, 245, 212, 1);
+    }
+
+    &--one-year .top-funds-card__return {
+      color: #F72585 !important;
+      text-shadow: 0 0 15px rgba(247, 37, 133, 1);
+    }
+
+    &--three-year .top-funds-card__return {
+      color: #4CC9F0 !important;
+      text-shadow: 0 0 15px rgba(76, 201, 240, 1);
+    }
+  }
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.1);
+  }
 }

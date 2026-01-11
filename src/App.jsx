@@ -17,7 +17,9 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
+  useTheme,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
@@ -47,6 +49,7 @@ import { clearFund, fetchFundDetails, fetchFundSectorRanking } from './features/
 import TopFundsPanel from './components/TopFundsPanel.jsx';
 import RankingTable from './components/RankingTable.jsx';
 import AppPreloader from './components/AppPreloader.jsx';
+import ThemeSelector from './components/ThemeSelector.jsx';
 
 // Timeframe options for return calculations
 const timeframes = [
@@ -101,6 +104,7 @@ const getSectorIcon = (sector) => {
 
 const App = () => {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const { list, listStatus, ranking, rankingStatus } = useSelector((state) => state.sectors);
   const { details, detailsStatus, sectorRanking, sectorRankingStatus } = useSelector(
     (state) => state.funds
@@ -260,7 +264,8 @@ const App = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'radial-gradient(circle at top, #F9E6D7 0%, #F6F1EC 45%, #ECF0EF 100%)',
+        bgcolor: 'background.default',
+        transition: 'background-color 0.3s ease',
       }}
     >
       {/* Header */}
@@ -294,7 +299,14 @@ const App = () => {
                 </Box>
               </Stack>
               <Box flex={1} />
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems="center">
+              <Stack
+                direction={{ xs: 'column', md: 'row' }}
+                spacing={1.5}
+                alignItems="center"
+                flexWrap="wrap"
+                useFlexGap
+                sx={{ maxWidth: '100%' }}
+              >
                 <ToggleButtonGroup
                   value={searchMode}
                   exclusive
@@ -312,7 +324,7 @@ const App = () => {
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') handleGlobalSearch();
                   }}
-                  sx={{ minWidth: 280 }}
+                  sx={{ minWidth: 200, maxWidth: 280, flex: 1 }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -340,12 +352,17 @@ const App = () => {
                 >
                   Search
                 </Button>
-                <IconButton
+                <ThemeSelector />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<RefreshIcon />}
                   onClick={() => selectedSector && handleSectorSelect(selectedSector)}
-                  sx={{ border: '1px solid rgba(31,84,96,0.12)' }}
+                  disabled={!selectedSector}
+                  sx={{ flexShrink: 0 }}
                 >
-                  <RefreshIcon />
-                </IconButton>
+                  Refresh
+                </Button>
               </Stack>
             </Stack>
           </Paper>
