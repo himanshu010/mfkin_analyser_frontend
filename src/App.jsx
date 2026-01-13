@@ -8,15 +8,22 @@ import {
   Chip,
   Container,
   Divider,
+  FormControl,
   Grid,
+  IconButton,
   InputAdornment,
+  InputLabel,
   LinearProgress,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
@@ -102,6 +109,8 @@ const getSectorIcon = (sector) => {
 
 const App = () => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { list, listStatus, ranking, rankingStatus } = useSelector((state) => state.sectors);
   const { details, detailsStatus, sectorRanking, sectorRankingStatus } = useSelector(
     (state) => state.funds
@@ -278,6 +287,12 @@ const App = () => {
     return list.filter((sector) => sector.toLowerCase().includes(search));
   }, [list, sectorSearch]);
 
+  const mobileSectorOptions = useMemo(() => {
+    if (!selectedSector) return sectorList;
+    if (sectorList.includes(selectedSector)) return sectorList;
+    return [selectedSector, ...sectorList];
+  }, [sectorList, selectedSector]);
+
   if ((listStatus === "idle" || listStatus === "loading") && list.length === 0) {
     return <AppPreloader message="Loading sector catalog..." />;
   }
@@ -292,8 +307,8 @@ const App = () => {
     >
       {/* Header */}
       <AppBar position="sticky" elevation={0} sx={{ background: "transparent" }}>
-        <Container maxWidth="xl" sx={{ py: { xs: 1.5, md: 2 } }}>
-          <Paper sx={{ p: 1.5, backdropFilter: "blur(14px)" }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 1, sm: 1.5, md: 2 } }}>
+          <Paper sx={{ p: { xs: 1, sm: 1.5 }, backdropFilter: "blur(14px)" }}>
             <Stack
               direction={{ xs: "column", md: "row" }}
               spacing={2}
@@ -315,8 +330,8 @@ const App = () => {
                     sx={{
                       bgcolor: "#FDE1C1",
                       color: "#1F5460",
-                      width: 48,
-                      height: 48,
+                      width: { xs: 40, sm: 44, md: 48 },
+                      height: { xs: 40, sm: 44, md: 48 },
                     }}
                   >
                     <InsightsIcon />
@@ -329,100 +344,177 @@ const App = () => {
                   >
                     MFkin Analyser
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: { xs: "none", sm: "block" } }}
+                  >
                     Sector intelligence and fund scouting
                   </Typography>
                 </Box>
               </Stack>
               <Box sx={{ flex: 1, display: { xs: "none", md: "block" } }} />
-              <Stack
-                direction={{ xs: "column", md: "row" }}
-                spacing={1.5}
-                alignItems={{ xs: "stretch", md: "center" }}
-                flexWrap="wrap"
-                useFlexGap
-                sx={{ maxWidth: "100%", width: { xs: "100%", md: "auto" } }}
-              >
-                <ToggleButtonGroup
-                  value={searchMode}
-                  exclusive
-                  onChange={(_, value) => value && setSearchMode(value)}
-                  size="small"
-                  sx={{ width: { xs: "100%", sm: "auto" }, flexWrap: "wrap" }}
-                >
-                  <ToggleButton value="sector" sx={{ flex: { xs: 1, sm: "initial" } }}>
-                    Sector
-                  </ToggleButton>
-                  <ToggleButton value="fund" sx={{ flex: { xs: 1, sm: "initial" } }}>
-                    Fund
-                  </ToggleButton>
-                </ToggleButtonGroup>
-                <TextField
-                  size="small"
-                  placeholder="Search fund, AMC, or sector"
-                  value={globalSearch}
-                  onChange={(event) => setGlobalSearch(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") handleGlobalSearch();
-                  }}
-                  sx={{
-                    minWidth: { xs: "100%", sm: 220 },
-                    maxWidth: { xs: "100%", md: 320 },
-                    flex: { md: 1 },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <ToggleButtonGroup
-                  value={timeframe}
-                  exclusive
-                  onChange={(_, value) => value && setTimeframe(value)}
-                  size="small"
-                  sx={{ width: { xs: "100%", sm: "auto" }, flexWrap: "wrap" }}
-                >
-                  {timeframes.map((item) => (
-                    <ToggleButton
-                      key={item.key}
-                      value={item.key}
-                      sx={{ flex: { xs: 1, sm: "initial" } }}
+              {isMobile ? (
+                <Stack spacing={1.25} sx={{ width: "100%" }}>
+                  <TextField
+                    size="small"
+                    placeholder="Search fund, AMC, or sector"
+                    value={globalSearch}
+                    onChange={(event) => setGlobalSearch(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") handleGlobalSearch();
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="search"
+                            onClick={handleGlobalSearch}
+                            disabled={!globalSearch.trim()}
+                            size="small"
+                          >
+                            <SearchIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
+                    <FormControl size="small" fullWidth>
+                      <InputLabel id="search-mode-label">Search</InputLabel>
+                      <Select
+                        labelId="search-mode-label"
+                        label="Search"
+                        value={searchMode}
+                        onChange={(event) => setSearchMode(event.target.value)}
+                      >
+                        <MenuItem value="sector">Sector</MenuItem>
+                        <MenuItem value="fund">Fund</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" fullWidth>
+                      <InputLabel id="timeframe-label">Timeframe</InputLabel>
+                      <Select
+                        labelId="timeframe-label"
+                        label="Timeframe"
+                        value={timeframe}
+                        onChange={(event) => setTimeframe(event.target.value)}
+                      >
+                        {timeframes.map((item) => (
+                          <MenuItem key={item.key} value={item.key}>
+                            {item.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ width: "100%" }}>
+                    <Box sx={{ flex: 1 }}>
+                      <ThemeSelector />
+                    </Box>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<RefreshIcon />}
+                      onClick={handleRefresh}
+                      disabled={isRefreshing}
+                      sx={{ flexShrink: 0, whiteSpace: "nowrap" }}
                     >
-                      {item.label}
+                      {isRefreshing ? "Refreshing..." : "Refresh"}
+                    </Button>
+                  </Stack>
+                </Stack>
+              ) : (
+                <Stack
+                  direction={{ xs: "column", md: "row" }}
+                  spacing={1.5}
+                  alignItems={{ xs: "stretch", md: "center" }}
+                  flexWrap="wrap"
+                  useFlexGap
+                  sx={{ maxWidth: "100%", width: { xs: "100%", md: "auto" } }}
+                >
+                  <ToggleButtonGroup
+                    value={searchMode}
+                    exclusive
+                    onChange={(_, value) => value && setSearchMode(value)}
+                    size="small"
+                    sx={{ width: { xs: "100%", sm: "auto" }, flexWrap: "wrap" }}
+                  >
+                    <ToggleButton value="sector" sx={{ flex: { xs: 1, sm: "initial" } }}>
+                      Sector
                     </ToggleButton>
-                  ))}
-                </ToggleButtonGroup>
-                <Button
-                  variant="contained"
-                  onClick={handleGlobalSearch}
-                  disabled={!globalSearch.trim()}
-                  sx={{ width: { xs: "100%", sm: "auto" } }}
-                >
-                  Search
-                </Button>
-                <Box
-                  sx={{
-                    width: { xs: "100%", sm: "auto" },
-                    display: "flex",
-                    justifyContent: { xs: "center", sm: "flex-start" },
-                  }}
-                >
-                  <ThemeSelector />
-                </Box>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<RefreshIcon />}
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  sx={{ flexShrink: 0, width: { xs: "100%", sm: "auto" } }}
-                >
-                  {isRefreshing ? "Refreshing..." : "Refresh"}
-                </Button>
-              </Stack>
+                    <ToggleButton value="fund" sx={{ flex: { xs: 1, sm: "initial" } }}>
+                      Fund
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                  <TextField
+                    size="small"
+                    placeholder="Search fund, AMC, or sector"
+                    value={globalSearch}
+                    onChange={(event) => setGlobalSearch(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") handleGlobalSearch();
+                    }}
+                    sx={{
+                      minWidth: { xs: "100%", sm: 220 },
+                      maxWidth: { xs: "100%", md: 320 },
+                      flex: { md: 1 },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  <ToggleButtonGroup
+                    value={timeframe}
+                    exclusive
+                    onChange={(_, value) => value && setTimeframe(value)}
+                    size="small"
+                    sx={{ width: { xs: "100%", sm: "auto" }, flexWrap: "wrap" }}
+                  >
+                    {timeframes.map((item) => (
+                      <ToggleButton
+                        key={item.key}
+                        value={item.key}
+                        sx={{ flex: { xs: 1, sm: "initial" } }}
+                      >
+                        {item.label}
+                      </ToggleButton>
+                    ))}
+                  </ToggleButtonGroup>
+                  <Button
+                    variant="contained"
+                    onClick={handleGlobalSearch}
+                    disabled={!globalSearch.trim()}
+                    size="small"
+                    sx={{ width: { xs: "100%", sm: "auto" } }}
+                  >
+                    Search
+                  </Button>
+                  <Box
+                    sx={{
+                      width: { xs: "100%", sm: "auto" },
+                      display: "flex",
+                      justifyContent: { xs: "center", sm: "flex-start" },
+                    }}
+                  >
+                    <ThemeSelector />
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<RefreshIcon />}
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    sx={{ flexShrink: 0, width: { xs: "100%", sm: "auto" } }}
+                  >
+                    {isRefreshing ? "Refreshing..." : "Refresh"}
+                  </Button>
+                </Stack>
+              )}
             </Stack>
           </Paper>
         </Container>
@@ -450,49 +542,70 @@ const App = () => {
             >
               Sectors
             </Typography>
-            <TextField
-              size="small"
-              placeholder="Search..."
-              value={sectorSearch}
-              onChange={(event) => setSectorSearch(event.target.value)}
-              sx={{ width: { xs: "100%", sm: 150 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Stack>
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: { xs: "nowrap", sm: "wrap" },
-              gap: 1,
-              overflowX: { xs: "auto", sm: "visible" },
-              pb: { xs: 1, sm: 0 },
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-            {sectorList.map((sector) => (
-              <Chip
-                key={sector}
-                icon={getSectorIcon(sector)}
-                label={sector}
-                onClick={() => handleSectorSelect(sector)}
-                variant={sector === selectedSector ? "filled" : "outlined"}
-                sx={{
-                  flexShrink: 0,
-                  fontWeight: sector === selectedSector ? 600 : 400,
-                  bgcolor: sector === selectedSector ? "rgba(31,84,96,0.15)" : "transparent",
-                  "&:hover": {
-                    bgcolor: "rgba(31,84,96,0.1)",
-                  },
+            {isMobile ? (
+              <FormControl size="small" fullWidth>
+                <InputLabel id="sector-select-label">Select sector</InputLabel>
+                <Select
+                  labelId="sector-select-label"
+                  label="Select sector"
+                  value={selectedSector || ""}
+                  onChange={(event) => handleSectorSelect(event.target.value)}
+                  MenuProps={{ PaperProps: { sx: { maxHeight: 360 } } }}
+                >
+                  {mobileSectorOptions.map((sector) => (
+                    <MenuItem key={sector} value={sector}>
+                      {sector}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            ) : (
+              <TextField
+                size="small"
+                placeholder="Search..."
+                value={sectorSearch}
+                onChange={(event) => setSectorSearch(event.target.value)}
+                sx={{ width: { xs: "100%", sm: 150 } }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
                 }}
               />
-            ))}
-          </Box>
+            )}
+          </Stack>
+          {!isMobile && (
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: { xs: "nowrap", sm: "wrap" },
+                gap: 1,
+                overflowX: { xs: "auto", sm: "visible" },
+                pb: { xs: 1, sm: 0 },
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {sectorList.map((sector) => (
+                <Chip
+                  key={sector}
+                  icon={getSectorIcon(sector)}
+                  label={sector}
+                  onClick={() => handleSectorSelect(sector)}
+                  variant={sector === selectedSector ? "filled" : "outlined"}
+                  sx={{
+                    flexShrink: 0,
+                    fontWeight: sector === selectedSector ? 600 : 400,
+                    bgcolor: sector === selectedSector ? "rgba(31,84,96,0.15)" : "transparent",
+                    "&:hover": {
+                      bgcolor: "rgba(31,84,96,0.1)",
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+          )}
         </Paper>
 
         {/* Sector Stats & Filters */}
@@ -583,7 +696,12 @@ const App = () => {
         {isRankingLoading && (
           <Paper sx={{ p: 3, mb: 2 }}>
             <Stack spacing={2}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                justifyContent="space-between"
+                alignItems={{ xs: "flex-start", sm: "center" }}
+              >
                 <Typography variant="subtitle1">
                   {rankingProgress?.message || `Crunching rankings for ${selectedSector}…`}
                 </Typography>
@@ -606,7 +724,13 @@ const App = () => {
               />
 
               {rankingProgress?.total && (
-                <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
+                <Stack
+                  direction="row"
+                  spacing={3}
+                  alignItems="center"
+                  justifyContent="center"
+                  sx={{ flexWrap: { xs: "wrap", sm: "nowrap" }, rowGap: 1 }}
+                >
                   <Typography variant="h4" color="primary.main">
                     {rankingProgress.processed || 0} / {rankingProgress.total}
                   </Typography>
@@ -623,7 +747,13 @@ const App = () => {
                 </Stack>
               )}
 
-              <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 1 }}>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                useFlexGap
+                sx={{ mt: 1, flexWrap: { xs: "wrap", sm: "nowrap" } }}
+              >
                 <Chip
                   icon={
                     <Box
@@ -685,7 +815,7 @@ const App = () => {
         {/* Partial Loading Indicator */}
         {isPartialLoading && activeRanking && (
           <Paper sx={{ p: 2, mb: 2, bgcolor: "info.light" }}>
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
               <Typography variant="body2" color="info.dark">
                 Showing {activeRanking.totalFunds} active funds. Loading{" "}
                 {activeRanking.pendingInactive || 0} inactive funds in background...

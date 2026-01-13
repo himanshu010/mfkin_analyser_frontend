@@ -261,6 +261,56 @@
   border-bottom: 1px solid rgba(128, 128, 128, 0.3);
 }
 
+.ranking-table__mobile-list {
+  display: grid;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md $spacing-md;
+}
+
+.ranking-table__mobile-card {
+  &.MuiPaper-root {
+    padding: $spacing-sm $spacing-md;
+    border: $border-subtle;
+    border-radius: $border-radius-lg;
+    box-shadow: none;
+  }
+
+  &--top.MuiPaper-root {
+    background-color: $bg-top-rank;
+  }
+}
+
+.ranking-table__mobile-header {
+  gap: $spacing-sm;
+}
+
+.ranking-table__mobile-rank {
+  font-weight: 600 !important;
+}
+
+.ranking-table__mobile-name {
+  font-weight: 600 !important;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.ranking-table__mobile-return {
+  font-weight: 600 !important;
+}
+
+.ranking-table__mobile-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $spacing-xs $spacing-sm;
+}
+
+.ranking-table__mobile-metric {
+  min-width: 0;
+}
+
 @media (max-width: 900px) {
   .ranking-table__header {
     flex-direction: column;
@@ -314,7 +364,44 @@
 }
 
 @media (max-width: 600px) {
+  .ranking-table {
+    border-radius: $border-radius-md;
+  }
+
+  .ranking-table__mobile-list {
+    padding: $spacing-xs $spacing-sm $spacing-md;
+  }
+
+  .ranking-table__mobile-card {
+    &.MuiPaper-root {
+      padding: $spacing-sm;
+    }
+  }
+
+  .ranking-table__container {
+    // Ensure horizontal scroll is visible and smooth on mobile
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+
+    // Add scroll hint shadow on right side
+    background:
+      linear-gradient(to right, transparent 0%, transparent 98%, rgba(0, 0, 0, 0.05) 100%),
+      linear-gradient(to left, transparent 0%, transparent 98%, rgba(0, 0, 0, 0.05) 100%);
+    background-attachment: local, local;
+
+    &--paginated {
+      max-height: calc(100vh - 280px);
+    }
+
+    &--full {
+      max-height: calc(100vh - 160px);
+    }
+  }
+
   .ranking-table__table {
+    // Hide columns beyond the 5th to save space
     th:nth-child(n + 6),
     td:nth-child(n + 6) {
       display: none;
@@ -323,32 +410,33 @@
 
   .ranking-table__head th,
   .ranking-table__row td {
-    padding: 4px 6px;
-    font-size: 0.72rem;
+    padding: 4px 4px;
+    font-size: 0.7rem;
   }
 
   .ranking-table__cell {
     &--rank {
-      width: 36px;
-      min-width: 36px;
+      width: 32px;
+      min-width: 32px;
     }
 
     &--name {
-      width: 180px;
-      min-width: 180px;
-      left: 36px;
+      width: 140px;
+      min-width: 140px;
+      left: 32px;
     }
 
     &--return {
-      width: 64px;
-      min-width: 64px;
-      left: 216px;
+      width: 58px;
+      min-width: 58px;
+      left: 172px;
     }
 
     &--aum {
-      width: 64px;
-      min-width: 64px;
-      left: 280px;
+      width: 58px;
+      min-width: 58px;
+      left: 230px;
+      border-right: none !important;
     }
   }
 
@@ -358,59 +446,169 @@
     }
 
     &--name {
-      left: 36px;
+      left: 32px;
     }
 
     &--return {
-      left: 216px;
+      left: 172px;
     }
 
     &--aum {
-      left: 280px;
+      left: 230px;
+      border-right: none !important;
     }
   }
 
   .ranking-table__fund-name {
-    font-size: 0.75rem !important;
+    font-size: 0.7rem !important;
+    max-width: 130px;
+    display: block;
   }
 
   .ranking-table__fund-manager {
-    font-size: 0.65rem !important;
+    font-size: 0.6rem !important;
+    display: none; // Hide manager on very small screens
   }
 
   .ranking-table__rank-chip {
     &.MuiChip-root {
-      height: 20px;
-      font-size: 0.7rem;
+      height: 18px;
+      font-size: 0.65rem;
+      padding: 0 4px;
     }
   }
 
   .ranking-table__status-chip {
     &.MuiChip-root {
-      height: 18px;
-      font-size: 0.6rem;
+      height: 16px;
+      font-size: 0.55rem;
     }
   }
 
   .ranking-table__pagination {
+    padding: $spacing-xs;
+
     .MuiTablePagination-toolbar {
       flex-wrap: wrap;
-      justify-content: flex-start;
+      justify-content: center;
       gap: $spacing-xs;
+      padding: $spacing-xs 0;
+      min-height: auto;
     }
 
     .MuiTablePagination-spacer {
       display: none;
     }
+
+    .MuiTablePagination-selectLabel,
+    .MuiTablePagination-displayedRows {
+      font-size: 0.7rem;
+    }
+
+    .MuiTablePagination-select {
+      font-size: 0.7rem;
+    }
+
+    .MuiIconButton-root {
+      padding: 4px;
+    }
   }
 
   .ranking-table__note {
-    padding: 0 $spacing-sm $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    font-size: 0.65rem;
+  }
+
+  .ranking-table__header {
+    padding: $spacing-xs $spacing-sm;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+}
+
+// Extra small devices (480px and below)
+@media (max-width: 480px) {
+  .ranking-table__container {
+    &--paginated {
+      max-height: calc(100vh - 250px);
+    }
+
+    &--full {
+      max-height: calc(100vh - 140px);
+    }
+  }
+
+  .ranking-table__cell {
+    &--rank {
+      width: 28px;
+      min-width: 28px;
+    }
+
+    &--name {
+      width: 120px;
+      min-width: 120px;
+      left: 28px;
+    }
+
+    &--return {
+      width: 54px;
+      min-width: 54px;
+      left: 148px;
+    }
+
+    &--aum {
+      width: 54px;
+      min-width: 54px;
+      left: 202px;
+    }
+  }
+
+  .ranking-table__body-cell {
+    &--rank {
+      left: 0;
+    }
+
+    &--name {
+      left: 28px;
+    }
+
+    &--return {
+      left: 148px;
+    }
+
+    &--aum {
+      left: 202px;
+    }
+  }
+
+  .ranking-table__fund-name {
+    font-size: 0.65rem !important;
+    max-width: 110px;
+  }
+
+  .ranking-table__head th,
+  .ranking-table__row td {
+    padding: 3px 2px;
+    font-size: 0.65rem;
+  }
+
+  .ranking-table__rank-chip {
+    &.MuiChip-root {
+      height: 16px;
+      font-size: 0.6rem;
+      padding: 0 2px;
+    }
   }
 }
 
 // Dark theme text visibility adjustments
 [data-theme="dark"] {
+  .ranking-table__mobile-card {
+    &--top.MuiPaper-root {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+
   .ranking-table__return {
     &--positive {
       color: #81c784 !important;
@@ -445,6 +643,16 @@
 
 // Funky theme - Full neon glow effects
 [data-theme="funky"] {
+  .ranking-table__mobile-card {
+    &--top.MuiPaper-root {
+      background: linear-gradient(
+        120deg,
+        rgba(247, 37, 133, 0.15),
+        rgba(123, 44, 191, 0.12)
+      ) !important;
+    }
+  }
+
   .ranking-table {
     border: 1px solid rgba(0, 245, 212, 0.3);
     box-shadow:

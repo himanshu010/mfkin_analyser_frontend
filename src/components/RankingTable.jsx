@@ -3,6 +3,7 @@ import {
   Box,
   Chip,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -13,6 +14,8 @@ import {
   TablePagination,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 // Format return value as percentage with 2 decimal places
@@ -231,6 +234,8 @@ const getComparator = (order, orderBy) =>
     : (a, b) => -descendingComparator(a, b, orderBy);
 
 const RankingTable = ({ rows, timeframeLabel, note }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("rank");
   const [page, setPage] = useState(0);
@@ -308,161 +313,268 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
         />
       )}
 
-      <TableContainer
-        className={`ranking-table__container ${usePagination ? "ranking-table__container--paginated" : "ranking-table__container--full"}`}
-      >
-        <Table size="small" stickyHeader className="ranking-table__table">
-          <TableHead className="ranking-table__head">
-            <TableRow>
-              {columns.map((col) => (
-                <TableCell
-                  key={col.id}
-                  align={col.align}
-                  className={`${col.cellClass} ${col.sticky ? "ranking-table__cell--sticky" : ""} ${col.sortable ? "ranking-table__cell--sortable" : ""}`}
-                  sortDirection={orderBy === col.id ? order : false}
-                >
-                  {col.sortable ? (
-                    <TableSortLabel
-                      active={orderBy === col.id}
-                      direction={orderBy === col.id ? order : "asc"}
-                      onClick={() => handleSort(col.id)}
-                    >
-                      {col.label}
-                    </TableSortLabel>
-                  ) : (
-                    col.label
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {displayRows.map((row) => {
+      {isMobile ? (
+        <Box className="ranking-table__mobile-list">
+          {displayRows.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No funds to display.
+            </Typography>
+          ) : (
+            displayRows.map((row) => {
               const m = row.metrics || {};
               const isTop3 = row.rank <= 3;
-              const bgClass = isTop3 ? "ranking-table__bg--top" : "ranking-table__bg--white";
-              const rowClass = `ranking-table__row ${isTop3 ? "ranking-table__row--top-rank" : ""}`;
+              const expenseRatio =
+                m.expenseRatio !== null && m.expenseRatio !== undefined
+                  ? formatPercent(m.expenseRatio)
+                  : "—";
 
               return (
-                <TableRow key={`${row.schemeCode}-${row.rank}`} className={rowClass}>
-                  <TableCell
-                    align="center"
-                    className={`ranking-table__body-cell--sticky ranking-table__body-cell--rank ${bgClass}`}
-                  >
-                    {isTop3 ? (
-                      <Chip label={row.rank} size="small" className="ranking-table__rank-chip" />
-                    ) : (
-                      row.rank
-                    )}
-                  </TableCell>
-                  <TableCell
-                    className={`ranking-table__body-cell--sticky ranking-table__body-cell--name ${bgClass}`}
-                  >
-                    <Tooltip
-                      title={`${row.schemeName}${m.fundManager ? ` • ${m.fundManager}` : ""}`}
-                      placement="top-start"
+                <Paper
+                  key={`${row.schemeCode}-${row.rank}`}
+                  elevation={0}
+                  className={`ranking-table__mobile-card ${isTop3 ? "ranking-table__mobile-card--top" : ""}`}
+                >
+                  <Stack spacing={1}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      className="ranking-table__mobile-header"
                     >
-                      <Box>
-                        <Typography variant="body2" className="ranking-table__fund-name">
-                          {row.schemeName}
-                        </Typography>
-                        {m.fundManager && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            className="ranking-table__fund-manager"
-                          >
-                            {m.fundManager}
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        {isTop3 ? (
+                          <Chip
+                            label={row.rank}
+                            size="small"
+                            className="ranking-table__rank-chip"
+                          />
+                        ) : (
+                          <Typography variant="subtitle2" className="ranking-table__mobile-rank">
+                            #{row.rank}
                           </Typography>
                         )}
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    className={`ranking-table__body-cell--sticky ranking-table__body-cell--return ${bgClass} ${getReturnClass(row.returns)}`}
-                  >
-                    {formatReturn(row.returns)}
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    className={`ranking-table__body-cell--sticky ranking-table__body-cell--aum ${bgClass}`}
-                  >
-                    {formatAum(m.aum)}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      label={row.isActive ? "Active" : "Inactive"}
-                      size="small"
-                      className={`ranking-table__status-chip ${row.isActive ? "ranking-table__status-chip--active" : "ranking-table__status-chip--inactive"}`}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    {m.expenseRatio !== null && m.expenseRatio !== undefined
-                      ? formatPercent(m.expenseRatio)
-                      : "—"}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="caption" noWrap>
-                      {m.category || "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">{formatNumber(m.peRatio, 1)}</TableCell>
-                  <TableCell align="right">{formatNumber(m.pbRatio, 1)}</TableCell>
-                  <TableCell align="right">
-                    {m.dividendYield !== null && m.dividendYield !== undefined
-                      ? formatPercent(m.dividendYield)
-                      : "—"}
-                  </TableCell>
-                  <TableCell align="right">{formatNumber(m.turnoverRatio, 2)}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Sharpe Ratio">
-                      <span>{formatNumber(m.sharpeRatio, 2)}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Alpha">
-                      <span className={getAlphaClass(m.alpha)}>{formatNumber(m.alpha, 2)}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Beta">
-                      <span>{formatNumber(m.beta, 2)}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Standard Deviation">
-                      <span>{formatNumber(m.standardDeviation, 2)}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Sortino Ratio">
-                      <span>{formatNumber(m.sortinoRatio, 2)}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Treynor Ratio">
-                      <span>{formatNumber(m.treynorRatio, 2)}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="caption" noWrap>
-                      {m.riskRating || "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="caption" noWrap>
-                      {m.inceptionDate || "—"}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                        <Typography
+                          variant="subtitle2"
+                          className={`ranking-table__mobile-return ${getReturnClass(row.returns)}`}
+                        >
+                          {formatReturn(row.returns)}
+                        </Typography>
+                      </Stack>
+                      <Chip
+                        label={row.isActive ? "Active" : "Inactive"}
+                        size="small"
+                        className={`ranking-table__status-chip ${row.isActive ? "ranking-table__status-chip--active" : "ranking-table__status-chip--inactive"}`}
+                      />
+                    </Stack>
 
-      {usePagination && (
+                    <Box>
+                      <Typography variant="subtitle2" className="ranking-table__mobile-name">
+                        {row.schemeName}
+                      </Typography>
+                      {m.fundManager && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          className="ranking-table__fund-manager"
+                        >
+                          {m.fundManager}
+                        </Typography>
+                      )}
+                    </Box>
+
+                    <Box className="ranking-table__mobile-metrics">
+                      <Box className="ranking-table__mobile-metric">
+                        <Typography variant="caption" color="text.secondary">
+                          AUM
+                        </Typography>
+                        <Typography variant="body2">{formatAum(m.aum)}</Typography>
+                      </Box>
+                      <Box className="ranking-table__mobile-metric">
+                        <Typography variant="caption" color="text.secondary">
+                          Expense
+                        </Typography>
+                        <Typography variant="body2">{expenseRatio}</Typography>
+                      </Box>
+                      <Box className="ranking-table__mobile-metric">
+                        <Typography variant="caption" color="text.secondary">
+                          Category
+                        </Typography>
+                        <Typography variant="body2" noWrap>
+                          {m.category || "—"}
+                        </Typography>
+                      </Box>
+                      <Box className="ranking-table__mobile-metric">
+                        <Typography variant="caption" color="text.secondary">
+                          Risk
+                        </Typography>
+                        <Typography variant="body2" noWrap>
+                          {m.riskRating || "—"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </Paper>
+              );
+            })
+          )}
+        </Box>
+      ) : (
+        <TableContainer
+          className={`ranking-table__container ${usePagination ? "ranking-table__container--paginated" : "ranking-table__container--full"}`}
+        >
+          <Table size="small" stickyHeader className="ranking-table__table">
+            <TableHead className="ranking-table__head">
+              <TableRow>
+                {columns.map((col) => (
+                  <TableCell
+                    key={col.id}
+                    align={col.align}
+                    className={`${col.cellClass} ${col.sticky ? "ranking-table__cell--sticky" : ""} ${col.sortable ? "ranking-table__cell--sortable" : ""}`}
+                    sortDirection={orderBy === col.id ? order : false}
+                  >
+                    {col.sortable ? (
+                      <TableSortLabel
+                        active={orderBy === col.id}
+                        direction={orderBy === col.id ? order : "asc"}
+                        onClick={() => handleSort(col.id)}
+                      >
+                        {col.label}
+                      </TableSortLabel>
+                    ) : (
+                      col.label
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {displayRows.map((row) => {
+                const m = row.metrics || {};
+                const isTop3 = row.rank <= 3;
+                const bgClass = isTop3 ? "ranking-table__bg--top" : "ranking-table__bg--white";
+                const rowClass = `ranking-table__row ${isTop3 ? "ranking-table__row--top-rank" : ""}`;
+
+                return (
+                  <TableRow key={`${row.schemeCode}-${row.rank}`} className={rowClass}>
+                    <TableCell
+                      align="center"
+                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--rank ${bgClass}`}
+                    >
+                      {isTop3 ? (
+                        <Chip label={row.rank} size="small" className="ranking-table__rank-chip" />
+                      ) : (
+                        row.rank
+                      )}
+                    </TableCell>
+                    <TableCell
+                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--name ${bgClass}`}
+                    >
+                      <Tooltip
+                        title={`${row.schemeName}${m.fundManager ? ` • ${m.fundManager}` : ""}`}
+                        placement="top-start"
+                      >
+                        <Box>
+                          <Typography variant="body2" className="ranking-table__fund-name">
+                            {row.schemeName}
+                          </Typography>
+                          {m.fundManager && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              className="ranking-table__fund-manager"
+                            >
+                              {m.fundManager}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--return ${bgClass} ${getReturnClass(row.returns)}`}
+                    >
+                      {formatReturn(row.returns)}
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--aum ${bgClass}`}
+                    >
+                      {formatAum(m.aum)}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        label={row.isActive ? "Active" : "Inactive"}
+                        size="small"
+                        className={`ranking-table__status-chip ${row.isActive ? "ranking-table__status-chip--active" : "ranking-table__status-chip--inactive"}`}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      {m.expenseRatio !== null && m.expenseRatio !== undefined
+                        ? formatPercent(m.expenseRatio)
+                        : "—"}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="caption" noWrap>
+                        {m.category || "—"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">{formatNumber(m.peRatio, 1)}</TableCell>
+                    <TableCell align="right">{formatNumber(m.pbRatio, 1)}</TableCell>
+                    <TableCell align="right">
+                      {m.dividendYield !== null && m.dividendYield !== undefined
+                        ? formatPercent(m.dividendYield)
+                        : "—"}
+                    </TableCell>
+                    <TableCell align="right">{formatNumber(m.turnoverRatio, 2)}</TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Sharpe Ratio">
+                        <span>{formatNumber(m.sharpeRatio, 2)}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Alpha">
+                        <span className={getAlphaClass(m.alpha)}>{formatNumber(m.alpha, 2)}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Beta">
+                        <span>{formatNumber(m.beta, 2)}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Standard Deviation">
+                        <span>{formatNumber(m.standardDeviation, 2)}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Sortino Ratio">
+                        <span>{formatNumber(m.sortinoRatio, 2)}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Treynor Ratio">
+                        <span>{formatNumber(m.treynorRatio, 2)}</span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="caption" noWrap>
+                        {m.riskRating || "—"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="caption" noWrap>
+                        {m.inceptionDate || "—"}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {usePagination && !isMobile && (
         <TablePagination
           component="div"
           count={safeRows.length}

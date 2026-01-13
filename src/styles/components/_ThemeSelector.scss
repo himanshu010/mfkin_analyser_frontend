@@ -1,1 +1,54 @@
-// ThemeSelector uses MUI ToggleButtonGroup - no custom styles needed
+@use "../variables" as *;
+
+// ThemeSelector uses MUI ToggleButtonGroup - custom styles for mobile responsiveness
+
+.theme-selector {
+  display: flex;
+  align-items: center;
+}
+
+// ===========================================
+// Mobile Responsive Styles
+// ===========================================
+
+// Small devices (600px and below)
+@media (max-width: 600px) {
+  .theme-selector {
+    width: 100%;
+    justify-content: center;
+
+    .MuiToggleButtonGroup-root {
+      width: 100%;
+    }
+
+    .MuiToggleButton-root {
+      flex: 1;
+      padding: $spacing-xs $spacing-sm;
+      font-size: 0.75rem;
+
+      .MuiSvgIcon-root {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Extra small devices (480px and below)
+@media (max-width: 480px) {
+  .theme-selector {
+    .MuiToggleButton-root {
+      padding: $spacing-xs;
+      min-width: 0;
+
+      // Hide text labels on very small screens, show only icons
+      .MuiToggleButton-label {
+        font-size: 0;
+      }
+
+      .MuiSvgIcon-root {
+        font-size: 1.1rem;
+        margin: 0;
+      }
+    }
+  }
+}

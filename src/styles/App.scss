@@ -190,3 +190,145 @@
   animation-delay: 0.2s;
   animation-fill-mode: both;
 }
+
+// ===========================================
+// Mobile Responsive Styles
+// ===========================================
+
+// Extra small devices (phones, 480px and down)
+@media (max-width: $breakpoint-xs) {
+  // Header mobile adjustments
+  .app-header__logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-header__paper {
+    padding: $spacing-xs + 2;
+  }
+
+  // Sector panel mobile
+  .sector-panel {
+    padding: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  .sector-panel__title {
+    font-size: 0.9rem;
+  }
+
+  .sector-panel__search {
+    width: 100%;
+  }
+
+  // Stats panel mobile
+  .stats-panel {
+    padding: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  .filter-field {
+    width: 100%;
+  }
+
+  // Loading panel mobile
+  .loading-panel {
+    padding: $spacing-md;
+  }
+
+  // Insights grid mobile
+  .insights-panel {
+    padding: $spacing-sm;
+  }
+
+  .insights-panel__title {
+    margin-bottom: $spacing-xs + 2;
+    font-size: 0.85rem;
+  }
+
+  // Fund details mobile
+  .fund-details {
+    padding: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  // Ranking container mobile
+  .ranking-container {
+    padding: 0 $spacing-xs;
+    padding-bottom: $spacing-md;
+  }
+}
+
+// Small devices (landscape phones, 600px and down)
+@media (max-width: $breakpoint-sm) {
+  // Header compact mode
+  .app-header__logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .app-header__search-field {
+    min-width: 100%;
+  }
+
+  // Sector panel
+  .sector-panel__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-sm;
+  }
+
+  .sector-panel__chips {
+    gap: $spacing-xs;
+  }
+
+  // Stats panel
+  .stats-panel__info {
+    text-align: center;
+    margin-bottom: $spacing-sm;
+  }
+
+  // Fund row
+  .fund-row__name {
+    max-width: 150px;
+    font-size: 0.8rem;
+  }
+
+  // Ranking container
+  .ranking-container {
+    padding: 0 $spacing-sm;
+    padding-bottom: $spacing-lg;
+  }
+}
+
+// Medium devices (tablets, 900px and down)
+@media (max-width: $breakpoint-md) {
+  // Header adjustments for tablets
+  .app-header__container {
+    padding: $spacing-sm 0;
+  }
+
+  .app-header__paper {
+    padding: $spacing-sm;
+  }
+
+  // Sector panel
+  .sector-panel {
+    padding: $spacing-sm + 4;
+  }
+
+  // Stats panel
+  .stats-panel {
+    padding: $spacing-sm + 4;
+  }
+
+  // Insights grid
+  .insights-grid {
+    margin-bottom: $spacing-sm;
+  }
+
+  // Fund row
+  .fund-row__name {
+    max-width: 200px;
+  }
+}

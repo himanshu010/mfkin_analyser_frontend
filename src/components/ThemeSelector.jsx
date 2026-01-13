@@ -20,19 +20,21 @@ const ThemeSelector = () => {
   };
 
   return (
-    <ToggleButtonGroup
-      value={currentTheme}
-      exclusive
-      onChange={handleChange}
-      size="small"
-      aria-label="theme selector"
-    >
-      {themeOptions.map((option) => (
-        <ToggleButton key={option.key} value={option.key} aria-label={option.label}>
-          <Tooltip title={option.label}>{option.icon}</Tooltip>
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
+    <div className="theme-selector">
+      <ToggleButtonGroup
+        value={currentTheme}
+        exclusive
+        onChange={handleChange}
+        size="small"
+        aria-label="theme selector"
+      >
+        {themeOptions.map((option) => (
+          <ToggleButton key={option.key} value={option.key} aria-label={option.label}>
+            <Tooltip title={option.label}>{option.icon}</Tooltip>
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
+    </div>
   );
 };
 

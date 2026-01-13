@@ -56,3 +56,62 @@
   border-radius: $border-radius-pill;
   background: $gradient-skeleton;
 }
+
+// ===========================================
+// Mobile Responsive Styles
+// ===========================================
+
+// Small devices (600px and below)
+@media (max-width: 600px) {
+  .app-preloader {
+    padding: $spacing-md;
+  }
+
+  .app-preloader__card {
+    &.MuiPaper-root {
+      padding: $spacing-lg;
+      max-width: 100%;
+    }
+  }
+
+  .app-preloader__content {
+    gap: $spacing-md;
+  }
+
+  .app-preloader__header {
+    flex-direction: column;
+    text-align: center;
+    gap: $spacing-sm;
+  }
+
+  .app-preloader__logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+// Extra small devices (480px and below)
+@media (max-width: 480px) {
+  .app-preloader {
+    padding: $spacing-sm;
+  }
+
+  .app-preloader__card {
+    &.MuiPaper-root {
+      padding: $spacing-md;
+    }
+  }
+
+  .app-preloader__content {
+    gap: $spacing-sm;
+  }
+
+  .app-preloader__logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-preloader__skeleton-line {
+    height: 8px;
+  }
+}

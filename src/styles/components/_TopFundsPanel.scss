@@ -10,6 +10,26 @@
   }
 }
 
+@media (max-width: 600px) {
+  .top-funds-panel {
+    gap: $spacing-sm;
+  }
+
+  .top-funds-card {
+    &.MuiPaper-root {
+      padding: $spacing-md;
+    }
+  }
+
+  .top-funds-card__return {
+    font-size: 1.5rem !important;
+  }
+
+  .top-funds-card__name {
+    font-size: 1.1rem !important;
+  }
+}
+
 .top-funds-card {
   &.MuiPaper-root {
     flex: 1;
@@ -183,5 +203,122 @@
   }
   50% {
     filter: brightness(1.1);
+  }
+}
+
+// ===========================================
+// Mobile Responsive Styles
+// ===========================================
+
+// Small devices (600px and below)
+@media (max-width: 600px) {
+  .top-funds-panel {
+    gap: $spacing-sm;
+  }
+
+  .top-funds-card {
+    &.MuiPaper-root {
+      padding: $spacing-sm + 4;
+    }
+  }
+
+  .top-funds-card__content {
+    gap: $spacing-sm;
+  }
+
+  .top-funds-card__name {
+    font-size: 0.9rem !important;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .top-funds-card__return {
+    font-size: 1.4rem !important;
+  }
+
+  .top-funds-card__aum-label,
+  .top-funds-card__aum-value {
+    font-size: 0.75rem !important;
+  }
+
+  .top-funds-card__tied {
+    margin-top: $spacing-xs;
+
+    .MuiTypography-root {
+      font-size: 0.7rem !important;
+    }
+  }
+}
+
+// Extra small devices (480px and below)
+@media (max-width: 480px) {
+  .top-funds-panel {
+    gap: $spacing-xs + 2;
+  }
+
+  .top-funds-card {
+    &.MuiPaper-root {
+      padding: $spacing-sm;
+    }
+
+    // Reduce glow effects on mobile for performance
+    &--one-year.MuiPaper-root,
+    &--three-year.MuiPaper-root,
+    &--five-year.MuiPaper-root {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  .top-funds-card__content {
+    gap: $spacing-xs + 2;
+  }
+
+  .top-funds-card__name {
+    font-size: 0.8rem !important;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+
+  .top-funds-card__return {
+    font-size: 1.2rem !important;
+  }
+
+  .top-funds-card__aum-label,
+  .top-funds-card__aum-value {
+    font-size: 0.7rem !important;
+  }
+
+  .top-funds-card__tied {
+    display: none; // Hide tied funds info on very small screens
+  }
+}
+
+// Medium devices (tablets, 900px and below)
+@media (max-width: 900px) {
+  .top-funds-panel {
+    flex-direction: column;
+  }
+
+  .top-funds-card {
+    &.MuiPaper-root {
+      padding: $spacing-md;
+    }
+  }
+
+  .top-funds-card__content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .top-funds-card__name {
+    flex: 1;
+    min-width: 0;
+    margin-right: $spacing-sm;
+  }
+
+  .top-funds-card__return {
+    flex-shrink: 0;
   }
 }
