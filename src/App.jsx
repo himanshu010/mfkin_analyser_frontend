@@ -17,7 +17,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-  useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
@@ -103,7 +102,6 @@ const getSectorIcon = (sector) => {
 
 const App = () => {
   const dispatch = useDispatch();
-  const _theme = useTheme();
   const { list, listStatus, ranking, rankingStatus } = useSelector((state) => state.sectors);
   const { details, detailsStatus, sectorRanking, sectorRankingStatus } = useSelector(
     (state) => state.funds
@@ -294,10 +292,19 @@ const App = () => {
     >
       {/* Header */}
       <AppBar position="sticky" elevation={0} sx={{ background: "transparent" }}>
-        <Container maxWidth="xl" sx={{ py: 2 }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 1.5, md: 2 } }}>
           <Paper sx={{ p: 1.5, backdropFilter: "blur(14px)" }}>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
-              <Stack direction="row" spacing={2} alignItems="center">
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={2}
+              alignItems={{ xs: "stretch", md: "center" }}
+            >
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ width: { xs: "100%", md: "auto" } }}
+              >
                 <Badge
                   overlap="circular"
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -316,29 +323,39 @@ const App = () => {
                   </Avatar>
                 </Badge>
                 <Box>
-                  <Typography variant="h2">MFkin Analyser</Typography>
+                  <Typography
+                    variant="h2"
+                    sx={{ fontSize: { xs: "1.5rem", sm: "1.7rem", md: "1.8rem" } }}
+                  >
+                    MFkin Analyser
+                  </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Sector intelligence and fund scouting
                   </Typography>
                 </Box>
               </Stack>
-              <Box flex={1} />
+              <Box sx={{ flex: 1, display: { xs: "none", md: "block" } }} />
               <Stack
                 direction={{ xs: "column", md: "row" }}
                 spacing={1.5}
-                alignItems="center"
+                alignItems={{ xs: "stretch", md: "center" }}
                 flexWrap="wrap"
                 useFlexGap
-                sx={{ maxWidth: "100%" }}
+                sx={{ maxWidth: "100%", width: { xs: "100%", md: "auto" } }}
               >
                 <ToggleButtonGroup
                   value={searchMode}
                   exclusive
                   onChange={(_, value) => value && setSearchMode(value)}
                   size="small"
+                  sx={{ width: { xs: "100%", sm: "auto" }, flexWrap: "wrap" }}
                 >
-                  <ToggleButton value="sector">Sector</ToggleButton>
-                  <ToggleButton value="fund">Fund</ToggleButton>
+                  <ToggleButton value="sector" sx={{ flex: { xs: 1, sm: "initial" } }}>
+                    Sector
+                  </ToggleButton>
+                  <ToggleButton value="fund" sx={{ flex: { xs: 1, sm: "initial" } }}>
+                    Fund
+                  </ToggleButton>
                 </ToggleButtonGroup>
                 <TextField
                   size="small"
@@ -348,7 +365,11 @@ const App = () => {
                   onKeyDown={(event) => {
                     if (event.key === "Enter") handleGlobalSearch();
                   }}
-                  sx={{ minWidth: 200, maxWidth: 280, flex: 1 }}
+                  sx={{
+                    minWidth: { xs: "100%", sm: 220 },
+                    maxWidth: { xs: "100%", md: 320 },
+                    flex: { md: 1 },
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -362,9 +383,14 @@ const App = () => {
                   exclusive
                   onChange={(_, value) => value && setTimeframe(value)}
                   size="small"
+                  sx={{ width: { xs: "100%", sm: "auto" }, flexWrap: "wrap" }}
                 >
                   {timeframes.map((item) => (
-                    <ToggleButton key={item.key} value={item.key}>
+                    <ToggleButton
+                      key={item.key}
+                      value={item.key}
+                      sx={{ flex: { xs: 1, sm: "initial" } }}
+                    >
                       {item.label}
                     </ToggleButton>
                   ))}
@@ -373,17 +399,26 @@ const App = () => {
                   variant="contained"
                   onClick={handleGlobalSearch}
                   disabled={!globalSearch.trim()}
+                  sx={{ width: { xs: "100%", sm: "auto" } }}
                 >
                   Search
                 </Button>
-                <ThemeSelector />
+                <Box
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    display: "flex",
+                    justifyContent: { xs: "center", sm: "flex-start" },
+                  }}
+                >
+                  <ThemeSelector />
+                </Box>
                 <Button
                   variant="outlined"
                   size="small"
                   startIcon={<RefreshIcon />}
                   onClick={handleRefresh}
                   disabled={isRefreshing}
-                  sx={{ flexShrink: 0 }}
+                  sx={{ flexShrink: 0, width: { xs: "100%", sm: "auto" } }}
                 >
                   {isRefreshing ? "Refreshing..." : "Refresh"}
                 </Button>
@@ -393,7 +428,7 @@ const App = () => {
         </Container>
       </AppBar>
 
-      <Container maxWidth="xl" sx={{ py: 2 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 1.5, md: 2 } }}>
         {/* Sector Selector */}
         <Paper
           sx={{
@@ -403,8 +438,16 @@ const App = () => {
             animationFillMode: "both",
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, minWidth: 80 }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", sm: "center" }}
+            sx={{ mb: 2 }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 600, minWidth: { xs: "auto", sm: 80 } }}
+            >
               Sectors
             </Typography>
             <TextField
@@ -412,7 +455,7 @@ const App = () => {
               placeholder="Search..."
               value={sectorSearch}
               onChange={(event) => setSectorSearch(event.target.value)}
-              sx={{ width: 150 }}
+              sx={{ width: { xs: "100%", sm: 150 } }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -425,8 +468,11 @@ const App = () => {
           <Box
             sx={{
               display: "flex",
-              flexWrap: "wrap",
+              flexWrap: { xs: "nowrap", sm: "wrap" },
               gap: 1,
+              overflowX: { xs: "auto", sm: "visible" },
+              pb: { xs: 1, sm: 0 },
+              WebkitOverflowScrolling: "touch",
             }}
           >
             {sectorList.map((sector) => (
@@ -437,6 +483,7 @@ const App = () => {
                 onClick={() => handleSectorSelect(sector)}
                 variant={sector === selectedSector ? "filled" : "outlined"}
                 sx={{
+                  flexShrink: 0,
                   fontWeight: sector === selectedSector ? 600 : 400,
                   bgcolor: sector === selectedSector ? "rgba(31,84,96,0.15)" : "transparent",
                   "&:hover": {
@@ -458,16 +505,32 @@ const App = () => {
             animationFillMode: "both",
           }}
         >
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems={{ xs: "stretch", md: "center" }}
+          >
             <Box flex={1}>
-              <Typography variant="h1">{activeSectorName || "Select a sector"}</Typography>
+              <Typography
+                variant="h1"
+                sx={{ fontSize: { xs: "1.6rem", sm: "2rem", md: "2.4rem" } }}
+              >
+                {activeSectorName || "Select a sector"}
+              </Typography>
               <Typography variant="body2" color="text.secondary">
                 {activeRanking?.generatedAt
                   ? `Last refreshed ${new Date(activeRanking.generatedAt).toLocaleString()}`
                   : "Select a sector above to see rankings"}
               </Typography>
             </Box>
-            <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center" useFlexGap>
+            <Stack
+              direction="row"
+              spacing={1}
+              flexWrap="wrap"
+              alignItems="center"
+              useFlexGap
+              sx={{ width: { xs: "100%", md: "auto" } }}
+            >
               <Chip label={`${activeRanking?.totalFunds ?? 0} funds`} size="small" />
               <Chip label={`Avg: ${formatReturn(averageReturn)}`} size="small" />
               <Chip
@@ -478,7 +541,11 @@ const App = () => {
                 label={`P/B: ${averagePb === null ? "—" : averagePb.toFixed(1)}`}
                 size="small"
               />
-              <Divider orientation="vertical" flexItem />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ display: { xs: "none", sm: "block" } }}
+              />
               {planFilters.map((plan) => (
                 <Chip
                   key={plan.key}
@@ -499,7 +566,7 @@ const App = () => {
                 placeholder="Filter funds..."
                 value={tableFilter}
                 onChange={(event) => setTableFilter(event.target.value)}
-                sx={{ width: 160 }}
+                sx={{ width: { xs: "100%", sm: 160 } }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -753,8 +820,8 @@ const App = () => {
         <Box
           sx={{
             width: "100%",
-            px: 2,
-            pb: 4,
+            px: { xs: 1, sm: 2 },
+            pb: { xs: 3, sm: 4 },
             animation: "floatIn 0.6s ease",
             animationDelay: "0.2s",
             animationFillMode: "both",

@@ -14,6 +14,8 @@
 
 .ranking-table__container {
   width: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 
   &--paginated {
     max-height: calc(100vh - 350px);
@@ -257,6 +259,154 @@
 
 .ranking-table__pagination {
   border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+@media (max-width: 900px) {
+  .ranking-table__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-xs;
+  }
+
+  .ranking-table__cell {
+    &--rank {
+      width: 40px;
+      min-width: 40px;
+      left: 0;
+    }
+
+    &--name {
+      width: 200px;
+      min-width: 200px;
+      left: 40px;
+    }
+
+    &--return {
+      width: 70px;
+      min-width: 70px;
+      left: 240px;
+    }
+
+    &--aum {
+      width: 70px;
+      min-width: 70px;
+      left: 310px;
+    }
+  }
+
+  .ranking-table__body-cell {
+    &--rank {
+      left: 0;
+    }
+
+    &--name {
+      left: 40px;
+    }
+
+    &--return {
+      left: 240px;
+    }
+
+    &--aum {
+      left: 310px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .ranking-table__table {
+    th:nth-child(n + 6),
+    td:nth-child(n + 6) {
+      display: none;
+    }
+  }
+
+  .ranking-table__head th,
+  .ranking-table__row td {
+    padding: 4px 6px;
+    font-size: 0.72rem;
+  }
+
+  .ranking-table__cell {
+    &--rank {
+      width: 36px;
+      min-width: 36px;
+    }
+
+    &--name {
+      width: 180px;
+      min-width: 180px;
+      left: 36px;
+    }
+
+    &--return {
+      width: 64px;
+      min-width: 64px;
+      left: 216px;
+    }
+
+    &--aum {
+      width: 64px;
+      min-width: 64px;
+      left: 280px;
+    }
+  }
+
+  .ranking-table__body-cell {
+    &--rank {
+      left: 0;
+    }
+
+    &--name {
+      left: 36px;
+    }
+
+    &--return {
+      left: 216px;
+    }
+
+    &--aum {
+      left: 280px;
+    }
+  }
+
+  .ranking-table__fund-name {
+    font-size: 0.75rem !important;
+  }
+
+  .ranking-table__fund-manager {
+    font-size: 0.65rem !important;
+  }
+
+  .ranking-table__rank-chip {
+    &.MuiChip-root {
+      height: 20px;
+      font-size: 0.7rem;
+    }
+  }
+
+  .ranking-table__status-chip {
+    &.MuiChip-root {
+      height: 18px;
+      font-size: 0.6rem;
+    }
+  }
+
+  .ranking-table__pagination {
+    .MuiTablePagination-toolbar {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: $spacing-xs;
+    }
+
+    .MuiTablePagination-spacer {
+      display: none;
+    }
+  }
+
+  .ranking-table__note {
+    padding: 0 $spacing-sm $spacing-xs;
+  }
 }
 
 // Dark theme text visibility adjustments

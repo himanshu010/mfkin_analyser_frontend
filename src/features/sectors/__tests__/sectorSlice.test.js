@@ -154,6 +154,17 @@ describe("sectorSlice", () => {
       expect(state.sectorCache).toEqual({});
     });
 
+    it("handles refresh with empty sector payload", async () => {
+      api.preloadSectorFunds.mockResolvedValue({ data: { success: true } });
+      api.getSectors.mockResolvedValue({ data: {} });
+
+      await store.dispatch(refreshSectorCatalog());
+
+      const state = store.getState().sectors;
+      expect(state.listStatus).toBe("succeeded");
+      expect(state.list).toEqual(["All Funds"]);
+    });
+
     it("sets error on failure", async () => {
       api.preloadSectorFunds.mockRejectedValue(new Error("Preload failed"));
 
