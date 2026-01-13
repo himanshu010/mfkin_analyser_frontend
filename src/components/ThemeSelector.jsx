@@ -1,14 +1,14 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { setTheme, selectTheme } from '../features/theme/themeSlice';
+import { useDispatch, useSelector } from "react-redux";
+import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { setTheme, selectTheme } from "../features/theme/themeSlice";
 
 const themeOptions = [
-  { key: 'light', label: 'Light', icon: <LightModeIcon fontSize="small" /> },
-  { key: 'dark', label: 'Dark', icon: <DarkModeIcon fontSize="small" /> },
-  { key: 'funky', label: 'Funky', icon: <AutoAwesomeIcon fontSize="small" /> },
+  { key: "light", label: "Light", icon: <LightModeIcon fontSize="small" /> },
+  { key: "dark", label: "Dark", icon: <DarkModeIcon fontSize="small" /> },
+  { key: "funky", label: "Funky", icon: <AutoAwesomeIcon fontSize="small" /> },
 ];
 
 const ThemeSelector = () => {

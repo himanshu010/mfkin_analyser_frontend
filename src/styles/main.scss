@@ -1,13 +1,13 @@
 // Main entry point for all styles
-@use 'variables' as *;
-@use 'animations';
+@use "variables" as *;
+@use "animations";
 
 // Component styles
-@use 'components/RankingTable';
-@use 'components/TopFundsPanel';
-@use 'components/AppPreloader';
-@use 'components/ThemeSelector';
-@use 'App';
+@use "components/RankingTable";
+@use "components/TopFundsPanel";
+@use "components/AppPreloader";
+@use "components/ThemeSelector";
+@use "App";
 
 // Global styles
 body {

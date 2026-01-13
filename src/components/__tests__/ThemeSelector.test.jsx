@@ -1,55 +1,55 @@
-import { describe, it, expect } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
-import ThemeSelector from '../ThemeSelector';
-import { renderWithProviders } from '../../test/testUtils';
+import { describe, it, expect } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import ThemeSelector from "../ThemeSelector";
+import { renderWithProviders } from "../../test/testUtils";
 
-describe('ThemeSelector', () => {
-  it('renders all theme options', () => {
+describe("ThemeSelector", () => {
+  it("renders all theme options", () => {
     renderWithProviders(<ThemeSelector />);
-    expect(screen.getByRole('button', { name: 'Light' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Funky' })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Light" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Funky" })).toBeInTheDocument();
   });
 
-  it('has light theme selected by default', () => {
+  it("has light theme selected by default", () => {
     renderWithProviders(<ThemeSelector />);
-    const lightButton = screen.getByRole('button', { name: 'Light' });
-    expect(lightButton).toHaveAttribute('aria-pressed', 'true');
+    const lightButton = screen.getByRole("button", { name: "Light" });
+    expect(lightButton).toHaveAttribute("aria-pressed", "true");
   });
 
-  it('changes theme when clicking dark button', () => {
+  it("changes theme when clicking dark button", () => {
     const { store } = renderWithProviders(<ThemeSelector />);
-    const darkButton = screen.getByRole('button', { name: 'Dark' });
+    const darkButton = screen.getByRole("button", { name: "Dark" });
     fireEvent.click(darkButton);
-    expect(store.getState().theme.current).toBe('dark');
+    expect(store.getState().theme.current).toBe("dark");
   });
 
-  it('changes theme when clicking funky button', () => {
+  it("changes theme when clicking funky button", () => {
     const { store } = renderWithProviders(<ThemeSelector />);
-    const funkyButton = screen.getByRole('button', { name: 'Funky' });
+    const funkyButton = screen.getByRole("button", { name: "Funky" });
     fireEvent.click(funkyButton);
-    expect(store.getState().theme.current).toBe('funky');
+    expect(store.getState().theme.current).toBe("funky");
   });
 
-  it('does not change theme when clicking already selected', () => {
+  it("does not change theme when clicking already selected", () => {
     const { store } = renderWithProviders(<ThemeSelector />);
-    const lightButton = screen.getByRole('button', { name: 'Light' });
+    const lightButton = screen.getByRole("button", { name: "Light" });
     fireEvent.click(lightButton);
-    expect(store.getState().theme.current).toBe('light');
+    expect(store.getState().theme.current).toBe("light");
   });
 
-  it('renders LightModeIcon', () => {
+  it("renders LightModeIcon", () => {
     renderWithProviders(<ThemeSelector />);
-    expect(screen.getByTestId('LightModeIcon')).toBeInTheDocument();
+    expect(screen.getByTestId("LightModeIcon")).toBeInTheDocument();
   });
 
-  it('renders DarkModeIcon', () => {
+  it("renders DarkModeIcon", () => {
     renderWithProviders(<ThemeSelector />);
-    expect(screen.getByTestId('DarkModeIcon')).toBeInTheDocument();
+    expect(screen.getByTestId("DarkModeIcon")).toBeInTheDocument();
   });
 
-  it('renders AutoAwesomeIcon', () => {
+  it("renders AutoAwesomeIcon", () => {
     renderWithProviders(<ThemeSelector />);
-    expect(screen.getByTestId('AutoAwesomeIcon')).toBeInTheDocument();
+    expect(screen.getByTestId("AutoAwesomeIcon")).toBeInTheDocument();
   });
 });

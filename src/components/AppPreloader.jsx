@@ -1,8 +1,8 @@
 // Full-screen loading state shown during initial data fetch
-import { Box, LinearProgress, Paper, Typography } from '@mui/material';
-import InsightsIcon from '@mui/icons-material/Insights';
+import { Box, LinearProgress, Paper, Typography } from "@mui/material";
+import InsightsIcon from "@mui/icons-material/Insights";
 
-const AppPreloader = ({ message = 'Loading...' }) => (
+const AppPreloader = ({ message = "Loading..." }) => (
   <Box className="app-preloader">
     <Paper className="app-preloader__card">
       <Box className="app-preloader__content">

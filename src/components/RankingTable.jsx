@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Chip,
@@ -13,22 +13,22 @@ import {
   TablePagination,
   Tooltip,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 
 // Format return value as percentage with 2 decimal places
 const formatReturn = (value) =>
-  value === null || value === undefined ? '—' : `${value.toFixed(2)}%`;
+  value === null || value === undefined ? "—" : `${value.toFixed(2)}%`;
 
 // Format numeric value with specified decimal places
 const formatNumber = (value, decimals = 2) =>
-  value === null || value === undefined ? '—' : Number(value).toFixed(decimals);
+  value === null || value === undefined ? "—" : Number(value).toFixed(decimals);
 
 // Format AUM in Indian notation (Crores)
 // Input is in 10s of crores, so divide by 10 to get crores
 const formatAum = (value) => {
-  if (value === null || value === undefined) return '—';
+  if (value === null || value === undefined) return "—";
   const num = Number(value);
-  if (Number.isNaN(num)) return '—';
+  if (Number.isNaN(num)) return "—";
   const crores = num / 10;
   if (crores >= 1000) return `₹${(crores / 1000).toFixed(1)}K Cr`;
   if (crores >= 100) return `₹${crores.toFixed(0)} Cr`;
@@ -37,7 +37,7 @@ const formatAum = (value) => {
 
 // Format value as percentage
 export const formatPercent = (value) => {
-  if (value === null || value === undefined) return '—';
+  if (value === null || value === undefined) return "—";
   return `${Number(value).toFixed(2)}%`;
 };
 
@@ -47,156 +47,156 @@ const PAGINATION_THRESHOLD = 1000;
 // Table column definitions with sorting, width, and sticky positioning
 const columns = [
   {
-    id: 'rank',
-    label: '#',
-    align: 'center',
+    id: "rank",
+    label: "#",
+    align: "center",
     sortable: true,
     sticky: true,
-    cellClass: 'ranking-table__cell--rank',
+    cellClass: "ranking-table__cell--rank",
   },
   {
-    id: 'schemeName',
-    label: 'Fund Name',
-    align: 'left',
+    id: "schemeName",
+    label: "Fund Name",
+    align: "left",
     sortable: true,
     sticky: true,
-    cellClass: 'ranking-table__cell--name',
+    cellClass: "ranking-table__cell--name",
   },
   {
-    id: 'returns',
-    label: 'Return',
-    align: 'right',
+    id: "returns",
+    label: "Return",
+    align: "right",
     sortable: true,
     sticky: true,
-    cellClass: 'ranking-table__cell--return',
+    cellClass: "ranking-table__cell--return",
   },
   {
-    id: 'aum',
-    label: 'AUM',
-    align: 'right',
+    id: "aum",
+    label: "AUM",
+    align: "right",
     sortable: true,
     sticky: true,
-    cellClass: 'ranking-table__cell--aum',
-    accessorKey: 'aum',
+    cellClass: "ranking-table__cell--aum",
+    accessorKey: "aum",
   },
   {
-    id: 'isActive',
-    label: 'Status',
-    align: 'center',
+    id: "isActive",
+    label: "Status",
+    align: "center",
     sortable: false,
-    cellClass: 'ranking-table__cell--status',
+    cellClass: "ranking-table__cell--status",
   },
   {
-    id: 'expenseRatio',
-    label: 'Expense',
-    align: 'right',
+    id: "expenseRatio",
+    label: "Expense",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--expense',
-    accessorKey: 'expenseRatio',
+    cellClass: "ranking-table__cell--expense",
+    accessorKey: "expenseRatio",
   },
   {
-    id: 'category',
-    label: 'Category',
-    align: 'center',
+    id: "category",
+    label: "Category",
+    align: "center",
     sortable: true,
-    cellClass: 'ranking-table__cell--category',
-    accessorKey: 'category',
+    cellClass: "ranking-table__cell--category",
+    accessorKey: "category",
   },
   {
-    id: 'peRatio',
-    label: 'P/E',
-    align: 'right',
+    id: "peRatio",
+    label: "P/E",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--pe',
-    accessorKey: 'peRatio',
+    cellClass: "ranking-table__cell--pe",
+    accessorKey: "peRatio",
   },
   {
-    id: 'pbRatio',
-    label: 'P/B',
-    align: 'right',
+    id: "pbRatio",
+    label: "P/B",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--pb',
-    accessorKey: 'pbRatio',
+    cellClass: "ranking-table__cell--pb",
+    accessorKey: "pbRatio",
   },
   {
-    id: 'dividendYield',
-    label: 'Div Yld',
-    align: 'right',
+    id: "dividendYield",
+    label: "Div Yld",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--dividend',
-    accessorKey: 'dividendYield',
+    cellClass: "ranking-table__cell--dividend",
+    accessorKey: "dividendYield",
   },
   {
-    id: 'turnoverRatio',
-    label: 'Turnover',
-    align: 'right',
+    id: "turnoverRatio",
+    label: "Turnover",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--turnover',
-    accessorKey: 'turnoverRatio',
+    cellClass: "ranking-table__cell--turnover",
+    accessorKey: "turnoverRatio",
   },
   {
-    id: 'sharpeRatio',
-    label: 'Sharpe',
-    align: 'right',
+    id: "sharpeRatio",
+    label: "Sharpe",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--sharpe',
-    accessorKey: 'sharpeRatio',
+    cellClass: "ranking-table__cell--sharpe",
+    accessorKey: "sharpeRatio",
   },
   {
-    id: 'alpha',
-    label: 'Alpha',
-    align: 'right',
+    id: "alpha",
+    label: "Alpha",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--alpha',
-    accessorKey: 'alpha',
+    cellClass: "ranking-table__cell--alpha",
+    accessorKey: "alpha",
   },
   {
-    id: 'beta',
-    label: 'Beta',
-    align: 'right',
+    id: "beta",
+    label: "Beta",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--beta',
-    accessorKey: 'beta',
+    cellClass: "ranking-table__cell--beta",
+    accessorKey: "beta",
   },
   {
-    id: 'stdDev',
-    label: 'Std Dev',
-    align: 'right',
+    id: "stdDev",
+    label: "Std Dev",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--stddev',
-    accessorKey: 'standardDeviation',
+    cellClass: "ranking-table__cell--stddev",
+    accessorKey: "standardDeviation",
   },
   {
-    id: 'sortinoRatio',
-    label: 'Sortino',
-    align: 'right',
+    id: "sortinoRatio",
+    label: "Sortino",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--sortino',
-    accessorKey: 'sortinoRatio',
+    cellClass: "ranking-table__cell--sortino",
+    accessorKey: "sortinoRatio",
   },
   {
-    id: 'treynorRatio',
-    label: 'Treynor',
-    align: 'right',
+    id: "treynorRatio",
+    label: "Treynor",
+    align: "right",
     sortable: true,
-    cellClass: 'ranking-table__cell--treynor',
-    accessorKey: 'treynorRatio',
+    cellClass: "ranking-table__cell--treynor",
+    accessorKey: "treynorRatio",
   },
   {
-    id: 'riskRating',
-    label: 'Risk',
-    align: 'center',
+    id: "riskRating",
+    label: "Risk",
+    align: "center",
     sortable: true,
-    cellClass: 'ranking-table__cell--risk',
-    accessorKey: 'riskRating',
+    cellClass: "ranking-table__cell--risk",
+    accessorKey: "riskRating",
   },
   {
-    id: 'inceptionDate',
-    label: 'Inception',
-    align: 'center',
+    id: "inceptionDate",
+    label: "Inception",
+    align: "center",
     sortable: true,
-    cellClass: 'ranking-table__cell--inception',
-    accessorKey: 'inceptionDate',
+    cellClass: "ranking-table__cell--inception",
+    accessorKey: "inceptionDate",
   },
 ];
 
@@ -213,10 +213,12 @@ const getSortValue = (row, columnId) => {
 export const descendingComparator = (a, b, orderBy) => {
   const aVal = getSortValue(a, orderBy);
   const bVal = getSortValue(b, orderBy);
-  if (aVal == null && bVal == null) return 0;
-  if (aVal == null) return 1;
-  if (bVal == null) return -1;
-  if (typeof aVal === 'string' && typeof bVal === 'string') return bVal.localeCompare(aVal);
+  const aIsNull = aVal === null || aVal === undefined;
+  const bIsNull = bVal === null || bVal === undefined;
+  if (aIsNull && bIsNull) return 0;
+  if (aIsNull) return 1;
+  if (bIsNull) return -1;
+  if (typeof aVal === "string" && typeof bVal === "string") return bVal.localeCompare(aVal);
   if (bVal < aVal) return -1;
   if (bVal > aVal) return 1;
   return 0;
@@ -224,13 +226,13 @@ export const descendingComparator = (a, b, orderBy) => {
 
 // Get comparator function based on sort order
 const getComparator = (order, orderBy) =>
-  order === 'desc'
+  order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 
 const RankingTable = ({ rows, timeframeLabel, note }) => {
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('rank');
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("rank");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(100);
 
@@ -246,8 +248,8 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
 
   // Toggle sort order or change sort column
   const handleSort = (columnId) => {
-    const isAsc = orderBy === columnId && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    const isAsc = orderBy === columnId && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(columnId);
     setPage(0);
   };
@@ -268,16 +270,16 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
 
   // Get return color class based on value
   const getReturnClass = (value) => {
-    if (value > 0) return 'ranking-table__return--positive';
-    if (value < 0) return 'ranking-table__return--negative';
-    return '';
+    if (value > 0) return "ranking-table__return--positive";
+    if (value < 0) return "ranking-table__return--negative";
+    return "";
   };
 
   // Get alpha color class based on value
   const getAlphaClass = (value) => {
-    if (value > 0) return 'ranking-table__alpha--positive';
-    if (value < 0) return 'ranking-table__alpha--negative';
-    return '';
+    if (value > 0) return "ranking-table__alpha--positive";
+    if (value < 0) return "ranking-table__alpha--negative";
+    return "";
   };
 
   return (
@@ -286,7 +288,7 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
         <Box>
           <Typography variant="h3">Full Ranking</Typography>
           <Typography variant="caption" color="text.secondary">
-            {timeframeLabel || '—'} returns • Click headers to sort
+            {timeframeLabel || "—"} returns • Click headers to sort
             {usePagination && ` • Page ${page + 1} of ${Math.ceil(safeRows.length / rowsPerPage)}`}
           </Typography>
         </Box>
@@ -307,7 +309,7 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
       )}
 
       <TableContainer
-        className={`ranking-table__container ${usePagination ? 'ranking-table__container--paginated' : 'ranking-table__container--full'}`}
+        className={`ranking-table__container ${usePagination ? "ranking-table__container--paginated" : "ranking-table__container--full"}`}
       >
         <Table size="small" stickyHeader className="ranking-table__table">
           <TableHead className="ranking-table__head">
@@ -316,13 +318,13 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
                 <TableCell
                   key={col.id}
                   align={col.align}
-                  className={`${col.cellClass} ${col.sticky ? 'ranking-table__cell--sticky' : ''} ${col.sortable ? 'ranking-table__cell--sortable' : ''}`}
+                  className={`${col.cellClass} ${col.sticky ? "ranking-table__cell--sticky" : ""} ${col.sortable ? "ranking-table__cell--sortable" : ""}`}
                   sortDirection={orderBy === col.id ? order : false}
                 >
                   {col.sortable ? (
                     <TableSortLabel
                       active={orderBy === col.id}
-                      direction={orderBy === col.id ? order : 'asc'}
+                      direction={orderBy === col.id ? order : "asc"}
                       onClick={() => handleSort(col.id)}
                     >
                       {col.label}
@@ -338,8 +340,8 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
             {displayRows.map((row) => {
               const m = row.metrics || {};
               const isTop3 = row.rank <= 3;
-              const bgClass = isTop3 ? 'ranking-table__bg--top' : 'ranking-table__bg--white';
-              const rowClass = `ranking-table__row ${isTop3 ? 'ranking-table__row--top-rank' : ''}`;
+              const bgClass = isTop3 ? "ranking-table__bg--top" : "ranking-table__bg--white";
+              const rowClass = `ranking-table__row ${isTop3 ? "ranking-table__row--top-rank" : ""}`;
 
               return (
                 <TableRow key={`${row.schemeCode}-${row.rank}`} className={rowClass}>
@@ -357,7 +359,7 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
                     className={`ranking-table__body-cell--sticky ranking-table__body-cell--name ${bgClass}`}
                   >
                     <Tooltip
-                      title={`${row.schemeName}${m.fundManager ? ` • ${m.fundManager}` : ''}`}
+                      title={`${row.schemeName}${m.fundManager ? ` • ${m.fundManager}` : ""}`}
                       placement="top-start"
                     >
                       <Box>
@@ -390,23 +392,27 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
                   </TableCell>
                   <TableCell align="center">
                     <Chip
-                      label={row.isActive ? 'Active' : 'Inactive'}
+                      label={row.isActive ? "Active" : "Inactive"}
                       size="small"
-                      className={`ranking-table__status-chip ${row.isActive ? 'ranking-table__status-chip--active' : 'ranking-table__status-chip--inactive'}`}
+                      className={`ranking-table__status-chip ${row.isActive ? "ranking-table__status-chip--active" : "ranking-table__status-chip--inactive"}`}
                     />
                   </TableCell>
                   <TableCell align="right">
-                    {m.expenseRatio != null ? formatPercent(m.expenseRatio) : '—'}
+                    {m.expenseRatio !== null && m.expenseRatio !== undefined
+                      ? formatPercent(m.expenseRatio)
+                      : "—"}
                   </TableCell>
                   <TableCell align="center">
                     <Typography variant="caption" noWrap>
-                      {m.category || '—'}
+                      {m.category || "—"}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">{formatNumber(m.peRatio, 1)}</TableCell>
                   <TableCell align="right">{formatNumber(m.pbRatio, 1)}</TableCell>
                   <TableCell align="right">
-                    {m.dividendYield != null ? formatPercent(m.dividendYield) : '—'}
+                    {m.dividendYield !== null && m.dividendYield !== undefined
+                      ? formatPercent(m.dividendYield)
+                      : "—"}
                   </TableCell>
                   <TableCell align="right">{formatNumber(m.turnoverRatio, 2)}</TableCell>
                   <TableCell align="right">
@@ -441,12 +447,12 @@ const RankingTable = ({ rows, timeframeLabel, note }) => {
                   </TableCell>
                   <TableCell align="center">
                     <Typography variant="caption" noWrap>
-                      {m.riskRating || '—'}
+                      {m.riskRating || "—"}
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
                     <Typography variant="caption" noWrap>
-                      {m.inceptionDate || '—'}
+                      {m.inceptionDate || "—"}
                     </Typography>
                   </TableCell>
                 </TableRow>

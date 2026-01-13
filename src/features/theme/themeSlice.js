@@ -1,17 +1,17 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 // Get initial theme from localStorage or default to 'light'
-const getInitialTheme = () => localStorage.getItem('theme') || 'light';
+const getInitialTheme = () => localStorage.getItem("theme") || "light";
 
 const themeSlice = createSlice({
-  name: 'theme',
+  name: "theme",
   initialState: {
     current: getInitialTheme(),
   },
   reducers: {
     setTheme: (state, action) => {
       state.current = action.payload;
-      localStorage.setItem('theme', action.payload);
+      localStorage.setItem("theme", action.payload);
     },
   },
 });

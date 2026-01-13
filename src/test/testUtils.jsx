@@ -1,12 +1,12 @@
-import { render } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import sectorsReducer from '../features/sectors/sectorSlice';
-import fundsReducer from '../features/funds/fundSlice';
-import themeReducer from '../features/theme/themeSlice';
-import { lightTheme } from '../theme/theme';
+import { render } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import sectorsReducer from "../features/sectors/sectorSlice";
+import fundsReducer from "../features/funds/fundSlice";
+import themeReducer from "../features/theme/themeSlice";
+import { lightTheme } from "../theme/theme";
 
 export const createTestStore = (preloadedState = {}) => {
   return configureStore({
@@ -41,30 +41,30 @@ export const renderWithProviders = (
 };
 
 export const mockSectorRanking = {
-  sector: 'Technology (IT)',
-  generatedAt: '2024-01-01T00:00:00Z',
+  sector: "Technology (IT)",
+  generatedAt: "2024-01-01T00:00:00Z",
   totalFunds: 50,
   topFunds: {
     oneYear: [
       {
-        schemeCode: '1001',
-        schemeName: 'Test Fund 1Y Leader',
+        schemeCode: "1001",
+        schemeName: "Test Fund 1Y Leader",
         returns: 25.5,
         metrics: { aum: 1000, expenseRatio: 0.5, peRatio: 20, pbRatio: 3 },
       },
     ],
     threeYear: [
       {
-        schemeCode: '1002',
-        schemeName: 'Test Fund 3Y Leader',
+        schemeCode: "1002",
+        schemeName: "Test Fund 3Y Leader",
         returns: 18.3,
         metrics: { aum: 2000, expenseRatio: 0.6, peRatio: 22, pbRatio: 3.5 },
       },
     ],
     fiveYear: [
       {
-        schemeCode: '1003',
-        schemeName: 'Test Fund 5Y Leader',
+        schemeCode: "1003",
+        schemeName: "Test Fund 5Y Leader",
         returns: 15.2,
         metrics: { aum: 3000, expenseRatio: 0.4, peRatio: 18, pbRatio: 2.5 },
       },
@@ -74,8 +74,8 @@ export const mockSectorRanking = {
     oneYear: [
       {
         rank: 1,
-        schemeCode: '1001',
-        schemeName: 'Test Fund Direct Growth',
+        schemeCode: "1001",
+        schemeName: "Test Fund Direct Growth",
         returns: 25.5,
         isActive: true,
         metrics: {
@@ -91,16 +91,16 @@ export const mockSectorRanking = {
           treynorRatio: 0.15,
           dividendYield: 1.5,
           turnoverRatio: 50,
-          riskLevel: 'Moderately High',
-          category: 'Large Cap',
-          fundManager: 'John Doe',
-          inceptionDate: '2020-01-01',
+          riskLevel: "Moderately High",
+          category: "Large Cap",
+          fundManager: "John Doe",
+          inceptionDate: "2020-01-01",
         },
       },
       {
         rank: 2,
-        schemeCode: '1004',
-        schemeName: 'Test Fund Regular IDCW',
+        schemeCode: "1004",
+        schemeName: "Test Fund Regular IDCW",
         returns: -5.2,
         isActive: false,
         metrics: {
@@ -116,8 +116,8 @@ export const mockSectorRanking = {
           treynorRatio: 0.08,
           dividendYield: null,
           turnoverRatio: null,
-          riskLevel: 'High',
-          category: 'Mid Cap',
+          riskLevel: "High",
+          category: "Mid Cap",
           fundManager: null,
           inceptionDate: null,
         },
@@ -128,13 +128,13 @@ export const mockSectorRanking = {
   },
 };
 
-export const mockSectorList = ['Technology (IT)', 'Banking', 'Pharma', 'FMCG', 'Auto'];
+export const mockSectorList = ["Technology (IT)", "Banking", "Pharma", "FMCG", "Auto"];
 
 export const mockFundDetails = {
-  schemeCode: '1001',
-  schemeName: 'Test Fund Details',
+  schemeCode: "1001",
+  schemeName: "Test Fund Details",
   latestNav: 150.25,
   returns: { year1: 25.5, year3: 18.3, year5: 15.2 },
   metrics: { aum: 1000, peRatio: 20 },
-  meta: { fund_house: 'Test AMC' },
+  meta: { fund_house: "Test AMC" },
 };

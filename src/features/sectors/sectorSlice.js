@@ -1,10 +1,10 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getSectors, getSectorRanking, API_BASE } from '../../app/api.js';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { getSectors, getSectorRanking, API_BASE } from "../../app/api.js";
 
 // Ensure "All Funds" option is always available in sector list
 const ensureAllFunds = (sectors) => {
-  if (!sectors.includes('All Funds')) {
-    return ['All Funds', ...sectors];
+  if (!sectors.includes("All Funds")) {
+    return ["All Funds", ...sectors];
   }
   return sectors;
 };
@@ -26,7 +26,7 @@ const cancelCurrentFetch = () => {
 };
 
 // Fetch available sector list from API
-export const fetchSectors = createAsyncThunk('sectors/fetchList', async () => {
+export const fetchSectors = createAsyncThunk("sectors/fetchList", async () => {
   const response = await getSectors({ available: true });
   const sectors = response.data.sectors || [];
   return ensureAllFunds(sectors);
@@ -35,7 +35,7 @@ export const fetchSectors = createAsyncThunk('sectors/fetchList', async () => {
 // Fetch sector ranking with Server-Sent Events for real-time progress
 // Supports cancellation when user switches to different sector
 export const fetchSectorRanking = createAsyncThunk(
-  'sectors/fetchRanking',
+  "sectors/fetchRanking",
   async (sectorName, { dispatch, getState }) => {
     // Return cached data if available
     const state = getState();
@@ -54,7 +54,7 @@ export const fetchSectorRanking = createAsyncThunk(
       currentEventSource = eventSource;
 
       // Handle progress updates from SSE stream
-      eventSource.addEventListener('progress', (event) => {
+      eventSource.addEventListener("progress", (event) => {
         try {
           const data = JSON.parse(event.data);
           dispatch(updateRankingProgress({ sector: sectorName, ...data }));
@@ -64,7 +64,7 @@ export const fetchSectorRanking = createAsyncThunk(
       });
 
       // Handle status updates from SSE stream
-      eventSource.addEventListener('status', (event) => {
+      eventSource.addEventListener("status", (event) => {
         try {
           const data = JSON.parse(event.data);
           dispatch(updateRankingProgress({ sector: sectorName, ...data }));
@@ -74,7 +74,7 @@ export const fetchSectorRanking = createAsyncThunk(
       });
 
       // Handle partial results - show active funds while inactive funds load
-      eventSource.addEventListener('partial', (event) => {
+      eventSource.addEventListener("partial", (event) => {
         try {
           const data = JSON.parse(event.data);
           dispatch(setPartialRanking(data));
@@ -84,7 +84,7 @@ export const fetchSectorRanking = createAsyncThunk(
       });
 
       // Handle completion - final ranking data received
-      eventSource.addEventListener('complete', (event) => {
+      eventSource.addEventListener("complete", (event) => {
         try {
           const data = JSON.parse(event.data);
           eventSource.close();
@@ -94,18 +94,18 @@ export const fetchSectorRanking = createAsyncThunk(
         } catch {
           eventSource.close();
           currentEventSource = null;
-          reject(new Error('Failed to parse response'));
+          reject(new Error("Failed to parse response"));
         }
       });
 
       // Handle errors - fallback to REST API if SSE fails
-      eventSource.addEventListener('error', () => {
+      eventSource.addEventListener("error", () => {
         eventSource.close();
         currentEventSource = null;
 
         // Don't fallback if cancelled due to sector switch
         if (currentFetchController?.signal?.aborted) {
-          reject(new Error('Fetch cancelled'));
+          reject(new Error("Fetch cancelled"));
           return;
         }
 
@@ -125,26 +125,26 @@ export const fetchSectorRanking = createAsyncThunk(
           if (currentEventSource === eventSource) {
             eventSource.close();
             currentEventSource = null;
-            reject(new Error('Request timed out'));
+            reject(new Error("Request timed out"));
           }
         },
         30 * 60 * 1000
       );
 
-      eventSource.addEventListener('complete', () => clearTimeout(timeout));
-      eventSource.addEventListener('error', () => clearTimeout(timeout));
+      eventSource.addEventListener("complete", () => clearTimeout(timeout));
+      eventSource.addEventListener("error", () => clearTimeout(timeout));
     });
   }
 );
 
 const sectorSlice = createSlice({
-  name: 'sectors',
+  name: "sectors",
   initialState: {
     list: [],
-    listStatus: 'idle',
-    activeSector: 'All Funds',
+    listStatus: "idle",
+    activeSector: "All Funds",
     ranking: null,
-    rankingStatus: 'idle',
+    rankingStatus: "idle",
     rankingProgress: null,
     sectorCache: {},
     error: null,
@@ -158,7 +158,7 @@ const sectorSlice = createSlice({
     // Clear ranking data when switching sectors
     clearRanking(state) {
       state.ranking = null;
-      state.rankingStatus = 'idle';
+      state.rankingStatus = "idle";
       state.rankingProgress = null;
       state.error = null;
     },
@@ -173,7 +173,7 @@ const sectorSlice = createSlice({
     // Show partial results while full data loads
     setPartialRanking(state, action) {
       state.ranking = action.payload;
-      state.rankingStatus = 'partial';
+      state.rankingStatus = "partial";
     },
 
     // Cache sector data to avoid refetching
@@ -185,30 +185,30 @@ const sectorSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchSectors.pending, (state) => {
-        state.listStatus = 'loading';
+        state.listStatus = "loading";
       })
       .addCase(fetchSectors.fulfilled, (state, action) => {
-        state.listStatus = 'succeeded';
+        state.listStatus = "succeeded";
         state.list = action.payload;
       })
       .addCase(fetchSectors.rejected, (state, action) => {
-        state.listStatus = 'failed';
+        state.listStatus = "failed";
         state.error = action.error.message;
       })
       .addCase(fetchSectorRanking.pending, (state) => {
-        state.rankingStatus = 'loading';
+        state.rankingStatus = "loading";
         state.rankingProgress = null;
       })
       .addCase(fetchSectorRanking.fulfilled, (state, action) => {
-        state.rankingStatus = 'succeeded';
+        state.rankingStatus = "succeeded";
         state.ranking = action.payload;
       })
       .addCase(fetchSectorRanking.rejected, (state, action) => {
         // Don't mark as failed if cancelled due to sector switch
-        if (action.error.message === 'Fetch cancelled') {
+        if (action.error.message === "Fetch cancelled") {
           return;
         }
-        state.rankingStatus = 'failed';
+        state.rankingStatus = "failed";
         state.error = action.error.message;
       });
   },

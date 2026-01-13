@@ -1,4 +1,4 @@
-@use '../variables' as *;
+@use "../variables" as *;
 
 .ranking-table {
   width: 100%;
@@ -260,7 +260,7 @@
 }
 
 // Dark theme text visibility adjustments
-[data-theme='dark'] {
+[data-theme="dark"] {
   .ranking-table__return {
     &--positive {
       color: #81c784 !important;
@@ -294,7 +294,7 @@
 }
 
 // Funky theme - Full neon glow effects
-[data-theme='funky'] {
+[data-theme="funky"] {
   .ranking-table {
     border: 1px solid rgba(0, 245, 212, 0.3);
     box-shadow:
