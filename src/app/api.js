@@ -11,14 +11,28 @@ const api = axios.create({
 });
 
 // Fetch list of available sectors
-export const getSectors = (options = {}) =>
-  api.get("/sectors", {
-    params: options.available ? { available: "true" } : {},
-  });
+export const getSectors = (options = {}) => {
+  const params = {};
+  if (options.available) {
+    params.available = "true";
+  }
+  if (options.refresh) {
+    params.refresh = "true";
+  }
+  return api.get("/sectors", { params });
+};
+
+// Precompute sector funds on the backend (analyze all funds + regroup)
+export const preloadSectorFunds = () => api.post("/sectors/preload");
 
 // Fetch ranking data for a specific sector
-export const getSectorRanking = (sectorName) =>
-  api.get(`/sector/${encodeURIComponent(sectorName)}`);
+export const getSectorRanking = (sectorName, options = {}) => {
+  const params = {};
+  if (options.refresh) {
+    params.refresh = "true";
+  }
+  return api.get(`/sector/${encodeURIComponent(sectorName)}`, { params });
+};
 
 // Fetch individual fund details by scheme code or name
 export const getFundDetails = (query) => api.get(`/fund/${encodeURIComponent(query)}`);

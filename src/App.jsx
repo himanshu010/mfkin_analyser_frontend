@@ -41,6 +41,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchSectors,
   fetchSectorRanking,
+  refreshSectorCatalog,
   setActiveSector,
 } from "./features/sectors/sectorSlice.js";
 import { clearFund, fetchFundDetails, fetchFundSectorRanking } from "./features/funds/fundSlice.js";
@@ -116,6 +117,7 @@ const App = () => {
   const [timeframe, setTimeframe] = useState("oneYear");
   const [tableFilter, setTableFilter] = useState("");
   const [activePlans, setActivePlans] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch sector list on initial mount
   useEffect(() => {
@@ -151,11 +153,33 @@ const App = () => {
 
   // Handle sector selection from chip click
   // Sets active sector for SSE priority queue to cancel other pending requests
-  const handleSectorSelect = (sector) => {
+  const handleSectorSelect = (sector, options = {}) => {
     setSelectedSector(sector);
     dispatch(setActiveSector(sector));
     dispatch(clearFund());
-    dispatch(fetchSectorRanking(sector));
+    const payload = options.force ? { name: sector, force: true } : sector;
+    dispatch(fetchSectorRanking(payload));
+  };
+
+  const handleRefresh = async () => {
+    if (isRefreshing) {
+      return;
+    }
+    setIsRefreshing(true);
+    try {
+      const refreshedList = await dispatch(refreshSectorCatalog()).unwrap();
+      const nextSector =
+        refreshedList && refreshedList.includes(selectedSector)
+          ? selectedSector
+          : refreshedList?.[0];
+      if (nextSector) {
+        handleSectorSelect(nextSector, { force: true });
+      }
+    } catch {
+      // Ignore refresh errors for now; listStatus handles failure state
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Handle global search by sector name or fund code
@@ -256,7 +280,7 @@ const App = () => {
     return list.filter((sector) => sector.toLowerCase().includes(search));
   }, [list, sectorSearch]);
 
-  if (listStatus === "idle" || listStatus === "loading") {
+  if ((listStatus === "idle" || listStatus === "loading") && list.length === 0) {
     return <AppPreloader message="Loading sector catalog..." />;
   }
 
@@ -357,11 +381,11 @@ const App = () => {
                   variant="outlined"
                   size="small"
                   startIcon={<RefreshIcon />}
-                  onClick={() => selectedSector && handleSectorSelect(selectedSector)}
-                  disabled={!selectedSector}
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
                   sx={{ flexShrink: 0 }}
                 >
-                  Refresh
+                  {isRefreshing ? "Refreshing..." : "Refresh"}
                 </Button>
               </Stack>
             </Stack>

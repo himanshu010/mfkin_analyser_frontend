@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getSectors, getSectorRanking, API_BASE } from "../../app/api.js";
+import { getSectors, getSectorRanking, preloadSectorFunds, API_BASE } from "../../app/api.js";
 
 // Ensure "All Funds" option is always available in sector list
 const ensureAllFunds = (sectors) => {
@@ -32,14 +32,24 @@ export const fetchSectors = createAsyncThunk("sectors/fetchList", async () => {
   return ensureAllFunds(sectors);
 });
 
+export const refreshSectorCatalog = createAsyncThunk("sectors/refreshCatalog", async () => {
+  await preloadSectorFunds();
+  const response = await getSectors({ available: true, refresh: true });
+  const sectors = response.data.sectors || [];
+  return ensureAllFunds(sectors);
+});
+
 // Fetch sector ranking with Server-Sent Events for real-time progress
 // Supports cancellation when user switches to different sector
 export const fetchSectorRanking = createAsyncThunk(
   "sectors/fetchRanking",
-  async (sectorName, { dispatch, getState }) => {
-    // Return cached data if available
+  async (sectorPayload, { dispatch, getState }) => {
+    const sectorName = typeof sectorPayload === "string" ? sectorPayload : sectorPayload?.name;
+    const forceRefresh = typeof sectorPayload === "object" && sectorPayload?.force;
+
+    // Return cached data if available (unless forced)
     const state = getState();
-    if (state.sectors.sectorCache[sectorName]) {
+    if (!forceRefresh && state.sectors.sectorCache[sectorName]) {
       return state.sectors.sectorCache[sectorName];
     }
 
@@ -50,7 +60,10 @@ export const fetchSectorRanking = createAsyncThunk(
 
     return new Promise((resolve, reject) => {
       const encodedSector = encodeURIComponent(sectorName);
-      const eventSource = new EventSource(`${API_BASE}/sector/${encodedSector}/stream`);
+      const refreshParam = forceRefresh ? "?refresh=true" : "";
+      const eventSource = new EventSource(
+        `${API_BASE}/sector/${encodedSector}/stream${refreshParam}`
+      );
       currentEventSource = eventSource;
 
       // Handle progress updates from SSE stream
@@ -110,7 +123,7 @@ export const fetchSectorRanking = createAsyncThunk(
         }
 
         // Fallback to regular API
-        getSectorRanking(sectorName)
+        getSectorRanking(sectorName, { refresh: forceRefresh })
           .then((response) => {
             const data = response.data;
             dispatch(cacheSectorData({ sector: sectorName, data }));
@@ -192,6 +205,18 @@ const sectorSlice = createSlice({
         state.list = action.payload;
       })
       .addCase(fetchSectors.rejected, (state, action) => {
+        state.listStatus = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(refreshSectorCatalog.pending, (state) => {
+        state.listStatus = "loading";
+      })
+      .addCase(refreshSectorCatalog.fulfilled, (state, action) => {
+        state.listStatus = "succeeded";
+        state.list = action.payload;
+        state.sectorCache = {};
+      })
+      .addCase(refreshSectorCatalog.rejected, (state, action) => {
         state.listStatus = "failed";
         state.error = action.error.message;
       })

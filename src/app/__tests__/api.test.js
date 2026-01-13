@@ -4,6 +4,7 @@ import api, {
   getSectorRanking,
   getFundDetails,
   getFundSectorRanking,
+  preloadSectorFunds,
   API_BASE,
   getApiBase,
 } from "../api";
@@ -25,9 +26,11 @@ vi.mock("axios", () => {
 
 describe("api.js", () => {
   let mockGet;
+  let mockPost;
 
   beforeEach(() => {
     mockGet = api.get;
+    mockPost = api.post;
     vi.clearAllMocks();
   });
 
@@ -85,10 +88,40 @@ describe("api.js", () => {
       expect(result.data).toEqual(mockSectors);
     });
 
+    it("fetches available sectors with refresh", async () => {
+      const mockSectors = ["Technology", "Banking"];
+      mockGet.mockResolvedValue({ data: mockSectors });
+
+      const result = await getSectors({ available: true, refresh: true });
+
+      expect(mockGet).toHaveBeenCalledWith("/sectors", {
+        params: { available: "true", refresh: "true" },
+      });
+      expect(result.data).toEqual(mockSectors);
+    });
+
     it("throws error on failure", async () => {
       mockGet.mockRejectedValue(new Error("Network error"));
 
       await expect(getSectors()).rejects.toThrow("Network error");
+    });
+  });
+
+  describe("preloadSectorFunds", () => {
+    it("posts to preload endpoint", async () => {
+      const payload = { success: true };
+      mockPost.mockResolvedValue({ data: payload });
+
+      const result = await preloadSectorFunds();
+
+      expect(mockPost).toHaveBeenCalledWith("/sectors/preload");
+      expect(result.data).toEqual(payload);
+    });
+
+    it("throws error on failure", async () => {
+      mockPost.mockRejectedValue(new Error("Preload failed"));
+
+      await expect(preloadSectorFunds()).rejects.toThrow("Preload failed");
     });
   });
 
@@ -99,7 +132,7 @@ describe("api.js", () => {
 
       const result = await getSectorRanking("Technology");
 
-      expect(mockGet).toHaveBeenCalledWith("/sector/Technology");
+      expect(mockGet).toHaveBeenCalledWith("/sector/Technology", { params: {} });
       expect(result.data).toEqual(mockRanking);
     });
 
@@ -109,7 +142,18 @@ describe("api.js", () => {
 
       await getSectorRanking("Technology (IT)");
 
-      expect(mockGet).toHaveBeenCalledWith("/sector/Technology%20(IT)");
+      expect(mockGet).toHaveBeenCalledWith("/sector/Technology%20(IT)", { params: {} });
+    });
+
+    it("passes refresh param when forced", async () => {
+      const mockRanking = { sector: "Technology", rankings: {} };
+      mockGet.mockResolvedValue({ data: mockRanking });
+
+      await getSectorRanking("Technology", { refresh: true });
+
+      expect(mockGet).toHaveBeenCalledWith("/sector/Technology", {
+        params: { refresh: "true" },
+      });
     });
 
     it("throws error on failure", async () => {

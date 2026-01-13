@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import sectorsReducer, {
   fetchSectors,
   fetchSectorRanking,
+  refreshSectorCatalog,
   clearRanking,
   setActiveSector,
   updateRankingProgress,
@@ -130,6 +131,40 @@ describe("sectorSlice", () => {
     });
   });
 
+  describe("refreshSectorCatalog", () => {
+    it("sets listStatus to loading when pending", () => {
+      api.preloadSectorFunds.mockReturnValue(new Promise(() => {}));
+      store.dispatch(refreshSectorCatalog());
+      expect(store.getState().sectors.listStatus).toBe("loading");
+    });
+
+    it("updates list and clears cache on success", async () => {
+      const cachedData = { sector: "Technology", rankings: [] };
+      store.dispatch(cacheSectorData({ sector: "Technology", data: cachedData }));
+
+      api.preloadSectorFunds.mockResolvedValue({ data: { success: true } });
+      api.getSectors.mockResolvedValue({ data: { sectors: ["Technology"] } });
+
+      await store.dispatch(refreshSectorCatalog());
+
+      const state = store.getState().sectors;
+      expect(state.listStatus).toBe("succeeded");
+      expect(state.list).toContain("All Funds");
+      expect(state.list).toContain("Technology");
+      expect(state.sectorCache).toEqual({});
+    });
+
+    it("sets error on failure", async () => {
+      api.preloadSectorFunds.mockRejectedValue(new Error("Preload failed"));
+
+      await store.dispatch(refreshSectorCatalog());
+
+      const state = store.getState().sectors;
+      expect(state.listStatus).toBe("failed");
+      expect(state.error).toBe("Preload failed");
+    });
+  });
+
   describe("fetchSectorRanking", () => {
     it("returns cached data if available", async () => {
       const cachedData = { sector: "Technology", rankings: { oneYear: [] } };
@@ -154,6 +189,23 @@ describe("sectorSlice", () => {
     it("handles URL encoding for special characters", () => {
       store.dispatch(fetchSectorRanking("All Funds"));
       expect(mockEventSource.url).toContain("/sector/All%20Funds/stream");
+    });
+
+    it("forces refresh and bypasses cache", async () => {
+      const cachedData = { sector: "Technology", rankings: [] };
+      store.dispatch(cacheSectorData({ sector: "Technology", data: cachedData }));
+      api.getSectorRanking.mockResolvedValue({ data: cachedData });
+
+      const promise = store.dispatch(fetchSectorRanking({ name: "Technology", force: true }));
+
+      expect(mockEventSource.url).toContain("/sector/Technology/stream?refresh=true");
+
+      if (eventCallbacks.error) {
+        eventCallbacks.error.forEach((cb) => cb({}));
+      }
+
+      await promise;
+      expect(api.getSectorRanking).toHaveBeenCalledWith("Technology", { refresh: true });
     });
 
     it("sets ranking on SSE complete", async () => {
@@ -204,7 +256,7 @@ describe("sectorSlice", () => {
       await promise;
       const state = store.getState().sectors;
       expect(state.rankingStatus).toBe("succeeded");
-      expect(api.getSectorRanking).toHaveBeenCalledWith("Technology");
+      expect(api.getSectorRanking).toHaveBeenCalledWith("Technology", { refresh: false });
     });
 
     it("sets error when REST fallback fails", async () => {
