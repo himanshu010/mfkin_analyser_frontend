@@ -67,6 +67,11 @@ Key response fields used in UI:
 - `fund` + `sectorRanking` for fund lookup
 - `metrics` fields: `aum`, `expenseRatio`, `peRatio`, `pbRatio`, `riskRating`, `fundManager`
 
+## Data Refresh
+
+- The Refresh button calls `POST /sectors/preload` to rebuild server caches and the rankings JSON.
+- The backend also refreshes the rankings cache nightly at server-local midnight.
+
 ## Data Sources
 
 This frontend does not call data providers directly. All data flows through the backend, which can aggregate MFAPI/AMFI and Kuvera (or other sources).

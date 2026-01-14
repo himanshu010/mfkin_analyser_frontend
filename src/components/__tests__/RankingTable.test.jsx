@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { screen, fireEvent, within } from "@testing-library/react";
 import RankingTable, { formatPercent, descendingComparator } from "../RankingTable";
 import { renderWithProviders } from "../../test/testUtils";
@@ -589,5 +589,112 @@ describe("RankingTable", () => {
     const nextButtons = screen.getAllByRole("button", { name: /next page/i });
     fireEvent.click(nextButtons[0]); // Go to page 2
     expect(screen.getByText("Fund 101")).toBeInTheDocument();
+  });
+
+  it("renders mobile cards when media query matches", () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      renderWithProviders(<RankingTable {...defaultProps} />);
+      expect(document.querySelectorAll(".ranking-table__mobile-card").length).toBeGreaterThan(0);
+      expect(screen.queryByRole("columnheader")).not.toBeInTheDocument();
+      expect(screen.getByText("#4")).toBeInTheDocument();
+      const chip = screen.getByText("1");
+      expect(chip.closest(".ranking-table__rank-chip")).toBeInTheDocument();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it("shows mobile empty state when no rows", () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      renderWithProviders(<RankingTable rows={[]} timeframeLabel="1Y" />);
+      expect(screen.getByText("No funds to display.")).toBeInTheDocument();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it("omits bottom pagination on mobile for large datasets", () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      const manyRows = Array.from({ length: 1100 }, (_, i) => ({
+        rank: i + 1,
+        schemeCode: `${1000 + i}`,
+        schemeName: `Fund ${i + 1}`,
+        returns: i * 0.5,
+        isActive: true,
+        metrics: {},
+      }));
+      renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
+      const paginationElements = document.querySelectorAll(".MuiTablePagination-root");
+      expect(paginationElements.length).toBe(1);
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it("handles null metrics in mobile view", () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      const rows = [
+        {
+          rank: 1,
+          schemeCode: "3001",
+          schemeName: "Null Metrics Mobile Fund",
+          returns: 5,
+          isActive: true,
+          metrics: null,
+        },
+      ];
+      renderWithProviders(<RankingTable rows={rows} timeframeLabel="1Y" />);
+      expect(screen.getByText("Null Metrics Mobile Fund")).toBeInTheDocument();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 });
