@@ -111,7 +111,13 @@ const App = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { list, listStatus, ranking, rankingStatus } = useSelector((state) => state.sectors);
+  const {
+    list,
+    listStatus,
+    ranking,
+    rankingStatus,
+    error: sectorError,
+  } = useSelector((state) => state.sectors);
   const { details, detailsStatus, sectorRanking, sectorRankingStatus } = useSelector(
     (state) => state.funds
   );
@@ -125,6 +131,7 @@ const App = () => {
   const [tableFilter, setTableFilter] = useState("");
   const [activePlans, setActivePlans] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [catalogStalled, setCatalogStalled] = useState(false);
 
   // Fetch sector list on initial mount
   useEffect(() => {
@@ -132,6 +139,19 @@ const App = () => {
       dispatch(fetchSectors());
     }
   }, [dispatch, listStatus]);
+
+  const isCatalogLoading = (listStatus === "idle" || listStatus === "loading") && list.length === 0;
+
+  useEffect(() => {
+    if (!isCatalogLoading) {
+      setCatalogStalled(false);
+      return;
+    }
+
+    setCatalogStalled(false);
+    const timeoutId = setTimeout(() => setCatalogStalled(true), 12000);
+    return () => clearTimeout(timeoutId);
+  }, [isCatalogLoading]);
 
   // Default to Technology sector, or first available
   const defaultSector = useMemo(() => {
@@ -187,6 +207,11 @@ const App = () => {
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  const handleCatalogRetry = () => {
+    setCatalogStalled(false);
+    dispatch(fetchSectors());
   };
 
   // Handle global search by sector name or fund code
@@ -293,8 +318,38 @@ const App = () => {
     return [selectedSector, ...sectorList];
   }, [sectorList, selectedSector]);
 
-  if ((listStatus === "idle" || listStatus === "loading") && list.length === 0) {
-    return <AppPreloader message="Loading sector catalog..." />;
+  if (listStatus === "failed" && list.length === 0) {
+    const message = sectorError
+      ? `Unable to load sector catalog. ${sectorError}`
+      : "Unable to load sector catalog.";
+    return (
+      <AppPreloader
+        message={message}
+        actions={
+          <Button variant="contained" size="small" onClick={handleCatalogRetry}>
+            Retry
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (isCatalogLoading) {
+    const message = catalogStalled
+      ? "Still loading sector catalog. The server may be waking up."
+      : "Loading sector catalog...";
+    return (
+      <AppPreloader
+        message={message}
+        actions={
+          catalogStalled ? (
+            <Button variant="contained" size="small" onClick={handleCatalogRetry}>
+              Retry
+            </Button>
+          ) : null
+        }
+      />
+    );
   }
 
   return (

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { Button } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import AppPreloader from "../AppPreloader";
 import { lightTheme } from "../../theme/theme";
@@ -17,6 +18,11 @@ describe("AppPreloader", () => {
   it("renders with custom message", () => {
     renderWithTheme(<AppPreloader message="Loading sector data..." />);
     expect(screen.getByText("Loading sector data...")).toBeInTheDocument();
+  });
+
+  it("renders actions when provided", () => {
+    renderWithTheme(<AppPreloader actions={<Button>Retry</Button>} />);
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 
   it("displays the app title", () => {

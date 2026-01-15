@@ -2,7 +2,7 @@
 import { Box, LinearProgress, Paper, Typography } from "@mui/material";
 import InsightsIcon from "@mui/icons-material/Insights";
 
-const AppPreloader = ({ message = "Loading..." }) => (
+const AppPreloader = ({ message = "Loading...", actions = null }) => (
   <Box className="app-preloader">
     <Paper className="app-preloader__card">
       <Box className="app-preloader__content">
@@ -22,6 +22,9 @@ const AppPreloader = ({ message = "Loading..." }) => (
             {message}
           </Typography>
           <LinearProgress />
+          {actions ? (
+            <Box sx={{ mt: 1.5, display: "flex", justifyContent: "center" }}>{actions}</Box>
+          ) : null}
         </Box>
         <Box className="app-preloader__skeleton">
           {[80, 60, 90, 45].map((width, index) => (
