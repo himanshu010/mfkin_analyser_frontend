@@ -1,117 +1,103 @@
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { motion } from "framer-motion";
+import { Trophy } from "lucide-react";
+import { formatAum, formatNumber, formatPercent, formatReturn, trend } from "../lib/format.js";
+import { cn } from "../lib/cn.js";
+import BorderBeam from "./ui/BorderBeam.jsx";
+import NumberTicker from "./ui/NumberTicker.jsx";
 
-// Timeframe configuration with CSS class mapping
 const timeframes = [
-  { key: "oneYear", label: "1Y Leaders", cssClass: "top-funds-card--one-year" },
-  { key: "threeYear", label: "3Y Leaders", cssClass: "top-funds-card--three-year" },
-  { key: "fiveYear", label: "5Y Leaders", cssClass: "top-funds-card--five-year" },
+  { key: "oneYear", label: "1Y leader", period: "1-year" },
+  { key: "threeYear", label: "3Y leader", period: "3-year" },
+  { key: "fiveYear", label: "5Y leader", period: "5-year" },
 ];
+const tone = { up: "text-up", down: "text-down", flat: "text-fg" };
 
-// Format return value as percentage with 2 decimal places
-const formatReturn = (value) =>
-  value === null || value === undefined ? "N/A" : `${value.toFixed(2)}%`;
+const Metric = ({ label, value }) => (
+  <div>
+    <dt className="text-xs text-fg-muted">{label}</dt>
+    <dd className="num text-sm font-medium">{value}</dd>
+  </div>
+);
 
-// Format AUM in Indian notation (Crores)
-// Input is in 10s of crores, so divide by 10 to get crores
-const formatAum = (value) => {
-  if (value === null || value === undefined) return "—";
-  const num = Number(value);
-  if (Number.isNaN(num)) return "—";
-  const crores = num / 10;
-  if (crores >= 1000) return `₹${(crores / 1000).toFixed(1)}K Cr`;
-  if (crores >= 100) return `₹${crores.toFixed(0)} Cr`;
-  return `₹${crores.toFixed(1)} Cr`;
-};
-
-// Display top performing funds for each timeframe (1Y, 3Y, 5Y)
-const TopFundsPanel = ({ topFunds, activeTimeframe }) => {
+// The best fund for each return period. The card for the period on show is marked; choosing a
+// card switches the period.
+const TopFundsPanel = ({ topFunds, activeTimeframe, onSelectTimeframe }) => {
   if (!topFunds) return null;
-
   return (
-    <Box className="top-funds-panel">
-      {timeframes.map((timeframe) => {
+    <section aria-labelledby="leaders-title" className="grid gap-3 md:grid-cols-3">
+      <h2 className="sr-only" id="leaders-title">
+        Leaders
+      </h2>
+      {timeframes.map((timeframe, index) => {
         const entries = topFunds[timeframe.key] || [];
         const lead = entries[0];
-        const expenseRatio =
-          lead?.metrics?.expenseRatio === null || lead?.metrics?.expenseRatio === undefined
-            ? "—"
-            : `${lead.metrics.expenseRatio}%`;
-        const peRatio =
-          lead?.metrics?.peRatio === null || lead?.metrics?.peRatio === undefined
-            ? "—"
-            : lead.metrics.peRatio;
-        const pbRatio =
-          lead?.metrics?.pbRatio === null || lead?.metrics?.pbRatio === undefined
-            ? "—"
-            : lead.metrics.pbRatio;
-        const isActive = activeTimeframe === timeframe.key;
-
+        const active = activeTimeframe === timeframe.key;
         return (
-          <Paper
+          <motion.article
+            animate={{ opacity: 1, y: 0 }}
+            aria-label={timeframe.label}
+            className={cn(
+              "card relative flex min-w-0 flex-col overflow-hidden p-5 transition-colors duration-200",
+              active ? "border-primary" : "hover:border-line-strong"
+            )}
+            initial={{ opacity: 0, y: 12 }}
             key={timeframe.key}
-            elevation={0}
-            className={`top-funds-card ${timeframe.cssClass} ${isActive ? "top-funds-card--active" : "top-funds-card--inactive"}`}
+            transition={{ delay: index * 0.06, duration: 0.4 }}
           >
-            <Stack spacing={2}>
-              <Typography variant="subtitle1">{timeframe.label}</Typography>
-              {lead ? (
-                <>
-                  <Typography variant="h3" className="top-funds-card__name">
-                    {lead.schemeName}
-                  </Typography>
-                  <Stack direction="row" spacing={2} alignItems="flex-start" flexWrap="wrap">
-                    <Typography
-                      variant="h2"
-                      color="primary.main"
-                      className="top-funds-card__return"
-                    >
-                      {formatReturn(lead.returns)}
-                    </Typography>
-                    <Stack spacing={0.5} className="top-funds-card__aum-label">
-                      <Typography variant="caption" color="text.secondary">
-                        AUM
-                      </Typography>
-                      <Typography variant="body2" className="top-funds-card__aum-value">
-                        {formatAum(lead.metrics?.aum)}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    <Typography variant="caption" color="text.secondary">
-                      Expense: {expenseRatio}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      P/E: {peRatio}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      P/B: {pbRatio}
-                    </Typography>
-                  </Stack>
-                </>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No leaders yet for this timeframe.
-                </Typography>
-              )}
-
-              {/* Show additional tied leaders if multiple funds have same top return */}
-              {entries.length > 1 && (
-                <Box className="top-funds-card__tied">
-                  <Typography variant="caption" color="text.secondary">
-                    Tied leaders:
-                  </Typography>
-                  {entries.slice(1, 3).map((fund) => (
-                    <Typography key={fund.schemeCode} variant="body2">
-                      {fund.schemeName}
-                    </Typography>
-                  ))}
-                </Box>
-              )}
-            </Stack>
-          </Paper>
+            {active ? <BorderBeam /> : null}
+            {onSelectTimeframe ? (
+              <button
+                aria-label={`Rank by ${timeframe.period} return`}
+                aria-pressed={active}
+                className="absolute inset-0 z-10 rounded-[inherit]"
+                onClick={() => onSelectTimeframe(timeframe.key)}
+                type="button"
+              />
+            ) : null}
+            <span className="flex items-center gap-2 text-xs font-semibold tracking-wide text-fg-muted uppercase">
+              <Trophy aria-hidden className={cn("size-4", active ? "text-accent" : "")} />
+              {timeframe.label}
+            </span>
+            {lead ? (
+              <>
+                <h3 className="mt-3 line-clamp-2 min-h-[2.75rem] font-semibold">
+                  {lead.schemeName}
+                </h3>
+                {typeof lead.returns === "number" ? (
+                  <NumberTicker
+                    className={cn(
+                      "num mt-3 text-3xl font-semibold tracking-tight",
+                      tone[trend(lead.returns)]
+                    )}
+                    format={formatReturn}
+                    value={lead.returns}
+                  />
+                ) : (
+                  <span className="num mt-3 text-3xl font-semibold tracking-tight">—</span>
+                )}
+                <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line pt-3 sm:grid-cols-4 md:grid-cols-2 xl:grid-cols-4">
+                  <Metric label="AUM" value={formatAum(lead.metrics?.aum)} />
+                  <Metric label="Expense" value={formatPercent(lead.metrics?.expenseRatio)} />
+                  <Metric label="P/E" value={formatNumber(lead.metrics?.peRatio, 1)} />
+                  <Metric label="P/B" value={formatNumber(lead.metrics?.pbRatio, 1)} />
+                </dl>
+                {entries.length > 1 ? (
+                  <span className="mt-3 text-xs text-fg-muted">
+                    Tied with{" "}
+                    {entries
+                      .slice(1, 3)
+                      .map((fund) => fund.schemeName)
+                      .join(", ")}
+                  </span>
+                ) : null}
+              </>
+            ) : (
+              <span className="mt-3 text-sm text-fg-muted">No leader for this period yet.</span>
+            )}
+          </motion.article>
         );
       })}
-    </Box>
+    </section>
   );
 };
 

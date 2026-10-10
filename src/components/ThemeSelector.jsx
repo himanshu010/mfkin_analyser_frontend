@@ -1,40 +1,26 @@
+import { Moon, Sparkles, Sun } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import { setTheme, selectTheme } from "../features/theme/themeSlice";
+import { selectTheme, setTheme } from "../features/theme/themeSlice";
+import Segmented from "./ui/Segmented.jsx";
 
 const themeOptions = [
-  { key: "light", label: "Light", icon: <LightModeIcon fontSize="small" /> },
-  { key: "dark", label: "Dark", icon: <DarkModeIcon fontSize="small" /> },
-  { key: "funky", label: "Funky", icon: <AutoAwesomeIcon fontSize="small" /> },
+  { value: "light", ariaLabel: "Light", title: "Light", icon: Sun },
+  { value: "dark", ariaLabel: "Dark", title: "Dark", icon: Moon },
+  { value: "funky", ariaLabel: "Funky", title: "Funky", icon: Sparkles },
 ];
 
-const ThemeSelector = () => {
+const ThemeSelector = ({ className }) => {
   const dispatch = useDispatch();
   const currentTheme = useSelector(selectTheme);
-
-  const handleChange = (_, newTheme) => {
-    if (newTheme) dispatch(setTheme(newTheme));
-  };
-
   return (
-    <div className="theme-selector">
-      <ToggleButtonGroup
-        value={currentTheme}
-        exclusive
-        onChange={handleChange}
-        size="small"
-        aria-label="theme selector"
-      >
-        {themeOptions.map((option) => (
-          <ToggleButton key={option.key} value={option.key} aria-label={option.label}>
-            <Tooltip title={option.label}>{option.icon}</Tooltip>
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-    </div>
+    <Segmented
+      className={className}
+      label="Theme"
+      onChange={(theme) => dispatch(setTheme(theme))}
+      options={themeOptions}
+      size="sm"
+      value={currentTheme}
+    />
   );
 };
 

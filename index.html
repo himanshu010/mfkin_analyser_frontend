@@ -1,15 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <title>MFkin Analyser</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
+    <meta
+      name="description"
+      content="Rank Indian mutual funds by sector: leaders over 1, 3 and 5 years, AUM, expense ratios and risk ratios side by side."
     />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // Set the saved theme before the first paint, so a dark theme never flashes light.
+      try {
+        var saved = localStorage.getItem("theme");
+        if (saved === "dark" || saved === "funky") document.documentElement.dataset.theme = saved;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,42 +1,22 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { Button } from "@mui/material";
-import { ThemeProvider } from "@mui/material/styles";
+import { describe, expect, it } from "vitest";
 import AppPreloader from "../AppPreloader";
-import { lightTheme } from "../../theme/theme";
-
-const renderWithTheme = (ui) => {
-  return render(<ThemeProvider theme={lightTheme}>{ui}</ThemeProvider>);
-};
 
 describe("AppPreloader", () => {
-  it("renders with default message", () => {
-    renderWithTheme(<AppPreloader />);
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
+  it("shows the default message and a loading bar", () => {
+    render(<AppPreloader />);
+    expect(screen.getByRole("heading", { name: "MFkin Analyser" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Loading...");
+    expect(
+      screen.getByRole("progressbar", { name: "Loading the sector catalog" })
+    ).toBeInTheDocument();
   });
 
-  it("renders with custom message", () => {
-    renderWithTheme(<AppPreloader message="Loading sector data..." />);
-    expect(screen.getByText("Loading sector data...")).toBeInTheDocument();
-  });
-
-  it("renders actions when provided", () => {
-    renderWithTheme(<AppPreloader actions={<Button>Retry</Button>} />);
+  it("shows a custom message and actions", () => {
+    render(
+      <AppPreloader actions={<button type="button">Retry</button>} message="Still waking up" />
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Still waking up");
     expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
-  });
-
-  it("displays the app title", () => {
-    renderWithTheme(<AppPreloader />);
-    expect(screen.getByText("MFkin Analyser")).toBeInTheDocument();
-  });
-
-  it("renders the insights icon", () => {
-    renderWithTheme(<AppPreloader />);
-    expect(screen.getByTestId("InsightsIcon")).toBeInTheDocument();
-  });
-
-  it("renders the circular progress indicator", () => {
-    renderWithTheme(<AppPreloader />);
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 });

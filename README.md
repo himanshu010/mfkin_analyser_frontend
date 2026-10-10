@@ -3,21 +3,21 @@
 [![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-18.x-149ECA?logo=react&logoColor=white)](https://react.dev/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![MUI](https://img.shields.io/badge/MUI-5.x-007FFF?logo=mui&logoColor=white)](https://mui.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.x-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Framer Motion](https://img.shields.io/badge/Framer%20Motion-14.x-0055FF?logo=framer&logoColor=white)](https://motion.dev/)
 [![Vitest](https://img.shields.io/badge/Vitest-1.x-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Coverage](https://img.shields.io/badge/Coverage-100%25_required-0B6E4F)](#testing-and-coverage)
 [![License](https://img.shields.io/badge/License-MIT-222)](#license)
 
 A clean, data-rich dashboard for the MFKIN Analyser backend. Think of it as a market command center: sector insights, fund rankings, and high-signal metrics in one glance. Built for speed, clarity, and a little bit of swagger.
 
-<img width="1063" height="1763" alt="Screenshot 2026-01-11 at 11 46 51 PM" src="https://github.com/user-attachments/assets/7ef9d2b6-bad7-43c8-9208-c5a222518cfd" />
-
 ## Highlights
 
 - Sector-first discovery with ranked fund lists and time-window toggles (1Y / 3Y / 5Y)
-- Fund spotlight cards with NAV, AUM, PE/PB, expense ratio, risk rating, and return source
-- Dense ranking table with sorting, sticky columns, and metadata-rich rows
-- Soft gradients, modern typography, and structured spacing for an info-heavy UI
+- Leaders for each period, the largest funds by AUM and the cheapest by expense ratio, side by side
+- Fund spotlight with NAV, returns, AUM, P/E, expense ratio, risk rating and the fund's rank in its sector
+- Dense ranking table with sorting, sticky columns and paging for very long lists; sortable cards on phones
+- Light, dark and funky themes, live ranking progress, and motion that respects "reduce motion"
 - Strict 100% coverage enforcement on every push
 
 ## What You Can Do
@@ -31,7 +31,7 @@ A clean, data-rich dashboard for the MFKIN Analyser backend. Think of it as a ma
 
 Prereqs:
 
-- Node.js 18+ (Vite 5 requirement)
+- Node.js 20+ (Tailwind CSS 4 requirement; `.nvmrc` pins 22)
 - npm
 
 ```bash
@@ -80,8 +80,9 @@ This frontend does not call data providers directly. All data flows through the 
 
 - Default view prioritizes sector intelligence and top-performer context.
 - Ranking table is intentionally dense and sortable for analyst workflows.
-- Loading UI favors linear progress bars and skeleton strips to match the design language.
-- The layout is built for fast scanning: leaders up top, table in the center, metrics on the side.
+- A data-dense dashboard style: Fira Sans for labels, Fira Code with tabular figures for numbers, blue for data and amber for highlights.
+- Every theme's text holds a 4.5:1 contrast on every surface; controls are at least 44 px on touch screens and inputs use 16 px text there, so iOS doesn't zoom in.
+- Motion (Framer Motion, plus Magic UI's number ticker and border beam and a Motion Primitives style sliding selection) stops when the system asks to reduce motion.
 
 ## Scripts
 
@@ -120,10 +121,11 @@ npm run setup:hooks
 ```
 src/
   app/            # API client + store
-  components/     # UI components
+  components/     # UI components (ui/ holds the shared primitives)
   features/       # Redux slices
+  lib/            # Formatting, sector insights, media queries
+  styles/         # Tailwind entry and the three themes
   test/           # Test setup
-  theme/          # MUI theme
 ```
 
 ## State Management

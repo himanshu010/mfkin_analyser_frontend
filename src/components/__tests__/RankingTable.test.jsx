@@ -1,700 +1,210 @@
-import { describe, it, expect, vi } from "vitest";
-import { screen, fireEvent, within } from "@testing-library/react";
-import RankingTable, { formatPercent, descendingComparator } from "../RankingTable";
-import { renderWithProviders } from "../../test/testUtils";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import RankingTable, { descendingComparator, formatPercent } from "../RankingTable";
+import { mockMedia } from "../../test/testUtils";
 
-const mockRows = [
+const full = {
+  aum: 1500,
+  expenseRatio: 0.5,
+  category: "Sectoral",
+  peRatio: 22.5,
+  pbRatio: 3.2,
+  dividendYield: 1.5,
+  turnoverRatio: 45,
+  sharpeRatio: 1.2,
+  alpha: 2.5,
+  beta: 0.95,
+  standardDeviation: 15.5,
+  sortinoRatio: 1.8,
+  treynorRatio: 0.12,
+  riskRating: "Very High",
+  fundManager: "A Manager",
+  inceptionDate: "Jan 2020",
+};
+const rows = [
   {
     rank: 1,
-    schemeCode: "1001",
-    schemeName: "Test Fund Direct Growth",
+    schemeCode: "1",
+    schemeName: "Alpha Fund",
     returns: 25.5,
     isActive: true,
-    metrics: {
-      aum: 1000,
-      expenseRatio: 0.5,
-      category: "Large Cap",
-      peRatio: 22.5,
-      pbRatio: 3.2,
-      dividendYield: 1.5,
-      turnoverRatio: 45,
-      sharpeRatio: 1.2,
-      alpha: 2.5,
-      beta: 0.95,
-      standardDeviation: 15.5,
-      sortinoRatio: 1.8,
-      treynorRatio: 0.12,
-      riskRating: "Moderately High",
-      fundManager: "John Doe",
-      inceptionDate: "Jan 2020",
-    },
+    metrics: full,
   },
   {
     rank: 2,
-    schemeCode: "1002",
-    schemeName: "Test Fund Regular IDCW",
+    schemeCode: "2",
+    schemeName: "Beta Fund",
     returns: -5.2,
     isActive: false,
-    metrics: {
-      aum: 500,
-      expenseRatio: 0.8,
-      category: "Mid Cap",
-      peRatio: 18.5,
-      pbRatio: 2.1,
-      dividendYield: 2.0,
-      turnoverRatio: 60,
-      sharpeRatio: 0.8,
-      alpha: -1.5,
-      beta: 1.1,
-      standardDeviation: 18.2,
-      sortinoRatio: 0.9,
-      treynorRatio: 0.08,
-      riskRating: "High",
-      fundManager: null,
-      inceptionDate: "Mar 2018",
-    },
+    metrics: { aum: 500, alpha: -1.5, category: "Thematic", fundManager: null },
   },
   {
     rank: 3,
-    schemeCode: "1003",
-    schemeName: "Test Fund Third",
-    returns: 10.0,
+    schemeCode: "3",
+    schemeName: "Gamma Fund",
+    returns: 0,
     isActive: true,
-    metrics: {
-      aum: 2000,
-      expenseRatio: 0.4,
-      category: "Small Cap",
-      peRatio: 25.0,
-      pbRatio: 4.0,
-      riskRating: "Very High",
-    },
+    metrics: { aum: null, category: null },
   },
-  {
-    rank: 4,
-    schemeCode: "1004",
-    schemeName: "Test Fund Fourth",
-    returns: 8.0,
-    isActive: true,
-    metrics: {},
-  },
+  { rank: 4, schemeCode: "4", schemeName: "Delta Fund", returns: 3, isActive: true },
 ];
+const many = Array.from({ length: 1201 }, (_, i) => ({
+  rank: i + 1,
+  schemeCode: String(i + 1),
+  schemeName: `Fund ${i + 1}`,
+  returns: 100 - i / 10,
+  isActive: true,
+  metrics: {},
+}));
 
-describe("RankingTable", () => {
-  const defaultProps = {
-    rows: mockRows,
-    timeframeLabel: "1 Year",
-  };
+const bodyNames = () =>
+  within(screen.getByRole("table"))
+    .getAllByRole("rowheader")
+    .map((cell) => cell.textContent);
 
-  it("formatPercent returns dash for null values", () => {
-    expect(formatPercent(null)).toBe("—");
-    expect(formatPercent(undefined)).toBe("—");
+afterEach(() => {
+  delete Element.prototype.scrollTo;
+});
+
+describe("helpers", () => {
+  it("re-exports formatPercent", () => {
+    expect(formatPercent(1)).toBe("1.00%");
   });
 
-  it("formatPercent formats numeric values", () => {
-    expect(formatPercent(1.234)).toBe("1.23%");
-  });
-
-  it("descendingComparator returns 0 when both values are null", () => {
-    const a = { metrics: { aum: null } };
-    const b = { metrics: { aum: null } };
-    expect(descendingComparator(a, b, "aum")).toBe(0);
-  });
-
-  it("descendingComparator returns 1 when aVal is null", () => {
-    const a = { metrics: { aum: null } };
-    const b = { metrics: { aum: 10 } };
+  it("compares descending with missing values last", () => {
+    const a = { returns: 5, schemeName: "A", metrics: { aum: null } };
+    const b = { returns: 3, schemeName: "B", metrics: { aum: 10 } };
+    expect(descendingComparator(a, b, "returns")).toBe(-1);
+    expect(descendingComparator(b, a, "returns")).toBe(1);
+    expect(descendingComparator(a, a, "returns")).toBe(0);
+    expect(descendingComparator(a, b, "schemeName")).toBeGreaterThan(0);
     expect(descendingComparator(a, b, "aum")).toBe(1);
+    expect(descendingComparator(b, a, "aum")).toBe(-1);
+    expect(descendingComparator(a, { metrics: {} }, "aum")).toBe(0);
   });
+});
 
-  it("shows fallback label when timeframe is missing", () => {
-    renderWithProviders(<RankingTable rows={mockRows} />);
-    expect(screen.getByText(/— returns • click headers to sort/i)).toBeInTheDocument();
-  });
-
-  it("renders table with fund data", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("Test Fund Direct Growth")).toBeInTheDocument();
-  });
-
-  it("displays rank with chip for top 3", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    const chip = screen.getByText("1");
-    expect(chip.closest(".ranking-table__rank-chip")).toBeInTheDocument();
-  });
-
-  it("displays rank number for rank > 3", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("4")).toBeInTheDocument();
-  });
-
-  it("displays formatted return with positive styling", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("25.50%")).toBeInTheDocument();
-  });
-
-  it("displays negative return", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("-5.20%")).toBeInTheDocument();
-  });
-
-  it("displays active status chip", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getAllByText("Active").length).toBeGreaterThan(0);
-  });
-
-  it("displays inactive status chip", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("Inactive")).toBeInTheDocument();
-  });
-
-  it("displays fund manager name", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-  });
-
-  it("displays dash for missing values", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    const cells = screen.getAllByText("—");
-    expect(cells.length).toBeGreaterThan(0);
-  });
-
-  it("handles empty rows", () => {
-    renderWithProviders(<RankingTable rows={[]} timeframeLabel="1 Year" />);
-    expect(screen.getByText("Full Ranking")).toBeInTheDocument();
-    expect(screen.getByText("0 funds")).toBeInTheDocument();
-  });
-
-  it("handles null rows", () => {
-    renderWithProviders(<RankingTable rows={null} timeframeLabel="1 Year" />);
-    expect(screen.getByText("0 funds")).toBeInTheDocument();
-  });
-
-  it("sorts by column when header clicked", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    const returnHeader = screen.getByRole("button", { name: /Return/i });
-    fireEvent.click(returnHeader);
-    const rows = screen.getAllByRole("row");
-    expect(rows.length).toBeGreaterThan(1);
-  });
-
-  it("toggles sort direction on second click", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    const rankHeader = screen.getByRole("button", { name: /#/i });
-    fireEvent.click(rankHeader); // First click - descending
-    fireEvent.click(rankHeader); // Second click - ascending
-    expect(screen.getByText("Test Fund Direct Growth")).toBeInTheDocument();
-  });
-
-  it("displays expense ratio formatted", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("0.50%")).toBeInTheDocument();
-  });
-
-  it("displays category", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("Large Cap")).toBeInTheDocument();
-  });
-
-  it("displays risk level", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("Moderately High")).toBeInTheDocument();
-  });
-
-  it("displays AUM formatted", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("₹100 Cr")).toBeInTheDocument();
-  });
-
-  it("displays inception date", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("Jan 2020")).toBeInTheDocument();
-  });
-
-  it("displays positive alpha", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("2.50")).toBeInTheDocument();
-  });
-
-  it("displays negative alpha", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText("-1.50")).toBeInTheDocument();
-  });
-
-  it("applies top row class to rank 1-3", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    const rows = document.querySelectorAll(".ranking-table__row--top-rank");
-    expect(rows.length).toBe(3);
-  });
-
-  it("displays note when provided", () => {
-    renderWithProviders(<RankingTable {...defaultProps} note="This is a note" />);
-    expect(screen.getByText("This is a note")).toBeInTheDocument();
-  });
-
-  it("displays timeframeLabel in header", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    expect(screen.getByText(/1 Year returns/)).toBeInTheDocument();
-  });
-
-  it("displays fund count", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
+describe("RankingTable on wide screens", () => {
+  it("shows every fund with its figures", () => {
+    render(<RankingTable note="Data note" rows={rows} timeframeLabel="1Y" />);
+    expect(screen.getByRole("heading", { name: "Full ranking" })).toBeInTheDocument();
+    expect(screen.getByText("1Y returns · select a column to sort")).toBeInTheDocument();
     expect(screen.getByText("4 funds")).toBeInTheDocument();
+    expect(screen.getAllByRole("columnheader")).toHaveLength(19);
+    const alpha = screen.getByRole("row", { name: /Alpha Fund/ });
+    expect(within(alpha).getByText("+25.50%")).toHaveClass("text-up");
+    expect(within(alpha).getByText("₹150 Cr")).toBeInTheDocument();
+    expect(within(alpha).getByText("Active")).toBeInTheDocument();
+    expect(within(alpha).getByText("A Manager")).toBeInTheDocument();
+    expect(within(alpha).getByText("2.50")).toHaveClass("text-up");
+    const beta = screen.getByRole("row", { name: /Beta Fund/ });
+    expect(within(beta).getByText("-5.20%")).toHaveClass("text-down");
+    expect(within(beta).getByText("-1.50")).toHaveClass("text-down");
+    expect(within(beta).getByText("Inactive")).toBeInTheDocument();
+    expect(screen.getByText("Data note")).toBeInTheDocument();
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 
-  it("handles large AUM values", () => {
-    const largeAumRows = [
-      {
-        rank: 1,
-        schemeCode: "1001",
-        schemeName: "Large Fund",
-        returns: 10,
-        isActive: true,
-        metrics: { aum: 15000 },
-      },
-    ];
-    renderWithProviders(<RankingTable rows={largeAumRows} timeframeLabel="1Y" />);
-    expect(screen.getByText("₹1.5K Cr")).toBeInTheDocument();
+  it("sorts by a column, flipping on a second click, missing values last", () => {
+    render(<RankingTable rows={rows} />);
+    expect(screen.getByText("— returns · select a column to sort")).toBeInTheDocument();
+    const aum = screen.getByRole("button", { name: "AUM" });
+    fireEvent.click(aum);
+    expect(screen.getByRole("columnheader", { name: "AUM" })).toHaveAttribute(
+      "aria-sort",
+      "ascending"
+    );
+    expect(bodyNames()[0]).toContain("Beta Fund");
+    expect(bodyNames().slice(-2).join()).toMatch(/Gamma Fund|Delta Fund/);
+    fireEvent.click(aum);
+    expect(screen.getByRole("columnheader", { name: "AUM" })).toHaveAttribute(
+      "aria-sort",
+      "descending"
+    );
+    expect(bodyNames()[0]).toContain("Alpha Fund");
+    fireEvent.click(screen.getByRole("button", { name: "Fund" }));
+    expect(bodyNames()[0]).toContain("Alpha Fund");
+    expect(screen.getByRole("columnheader", { name: "Status" })).not.toHaveAttribute("aria-sort");
   });
 
-  it("handles medium AUM values", () => {
-    const medAumRows = [
-      {
-        rank: 1,
-        schemeCode: "1001",
-        schemeName: "Medium Fund",
-        returns: 10,
-        isActive: true,
-        metrics: { aum: 5000 },
-      },
-    ];
-    renderWithProviders(<RankingTable rows={medAumRows} timeframeLabel="1Y" />);
-    expect(screen.getByText("₹500 Cr")).toBeInTheDocument();
+  it("marks a searched fund and scrolls the table, not the page, to it", () => {
+    const scrolled = [];
+    Element.prototype.scrollTo = function scrollTo() {
+      scrolled.push(this);
+    };
+    render(<RankingTable highlightCode="2" rows={rows} />);
+    expect(screen.getByRole("row", { name: /Beta Fund/ })).toHaveClass("bg-primary-soft");
+    expect(scrolled).toEqual([
+      screen.getByRole("region", { name: "Ranking table, scrolls in both directions" }),
+    ]);
+    delete Element.prototype.scrollTo;
   });
 
-  it("shows pagination for large datasets", () => {
-    const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-      rank: i + 1,
-      schemeCode: `${1000 + i}`,
-      schemeName: `Fund ${i + 1}`,
-      returns: i * 0.5,
-      isActive: true,
-      metrics: {},
-    }));
-    renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-    // When > 1000 items, pagination is enabled and fund count shown
-    expect(screen.getByText("1100 funds")).toBeInTheDocument();
-    // Verify pagination component is rendered (two pagination instances - top and bottom)
-    const paginationElements = document.querySelectorAll(".MuiTablePagination-root");
-    expect(paginationElements.length).toBe(2);
+  it("says when there is nothing to show", () => {
+    render(<RankingTable rows={undefined} />);
+    expect(screen.getByText("No funds to show.")).toBeInTheDocument();
+    expect(screen.getByText("0 funds")).toBeInTheDocument();
   });
 
-  it("handles pagination page change", () => {
-    const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-      rank: i + 1,
-      schemeCode: `${1000 + i}`,
-      schemeName: `Fund ${i + 1}`,
-      returns: i * 0.5,
-      isActive: true,
-      metrics: {},
-    }));
-    renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-    // Find and click the next page button in TablePagination
-    const nextButtons = screen.getAllByRole("button", { name: /next page/i });
-    expect(nextButtons.length).toBeGreaterThan(0);
-    fireEvent.click(nextButtons[0]);
-    // After clicking next, Fund 101 should be on page 2
-    expect(screen.getByText("Fund 101")).toBeInTheDocument();
+  it("pages very long lists", () => {
+    const { rerender } = render(<RankingTable rows={many} />);
+    const [top, bottom] = screen.getAllByRole("navigation");
+    expect(top).toHaveAccessibleName("Ranking pages");
+    expect(bottom).toHaveAccessibleName("Ranking pages, bottom");
+    expect(within(top).getByText("1–100 of 1201")).toBeInTheDocument();
+    expect(within(top).getByRole("button", { name: "Previous page" })).toBeDisabled();
+    fireEvent.click(within(top).getByRole("button", { name: "Next page" }));
+    expect(within(top).getByText("101–200 of 1201")).toBeInTheDocument();
+    fireEvent.change(within(top).getByRole("combobox", { name: "Rows per page" }), {
+      target: { value: "500" },
+    });
+    expect(within(top).getByText("1–500 of 1201")).toBeInTheDocument();
+    fireEvent.click(within(top).getByRole("button", { name: "Next page" }));
+    fireEvent.click(within(top).getByRole("button", { name: "Next page" }));
+    expect(within(top).getByText("1001–1201 of 1201")).toBeInTheDocument();
+    expect(within(top).getByRole("button", { name: "Next page" })).toBeDisabled();
+    fireEvent.click(within(top).getByRole("button", { name: "Previous page" }));
+    expect(within(top).getByText("501–1000 of 1201")).toBeInTheDocument();
+    rerender(<RankingTable rows={many.slice(0, 1100)} />);
+    expect(
+      within(screen.getAllByRole("navigation")[0]).getByText("1–500 of 1100")
+    ).toBeInTheDocument();
+  });
+});
+
+describe("RankingTable on phones", () => {
+  it("shows cards with a sort control", () => {
+    mockMedia("max-width: 639px");
+    render(<RankingTable highlightCode="3" rows={rows} timeframeLabel="3Y" />);
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByText("3Y returns · choose how to sort below")).toBeInTheDocument();
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(4);
+    expect(within(items[0]).getByText("A Manager")).toBeInTheDocument();
+    expect(items[2]).toHaveClass("bg-primary-soft");
+    fireEvent.change(screen.getByRole("combobox", { name: "Sort by" }), {
+      target: { value: "returns" },
+    });
+    expect(within(screen.getAllByRole("listitem")[0]).getByText("Beta Fund")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Ascending; switch to descending" }));
+    expect(within(screen.getAllByRole("listitem")[0]).getByText("Alpha Fund")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Descending; switch to ascending" }));
+    expect(within(screen.getAllByRole("listitem")[0]).getByText("Beta Fund")).toBeInTheDocument();
   });
 
-  it("handles rows per page change", () => {
-    const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-      rank: i + 1,
-      schemeCode: `${1000 + i}`,
-      schemeName: `Fund ${i + 1}`,
-      returns: i * 0.5,
-      isActive: true,
-      metrics: {},
-    }));
-    renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-    // Find the rows-per-page select and change it
-    const selects = screen.getAllByRole("combobox");
-    fireEvent.mouseDown(selects[0]);
-    const option = screen.getByRole("option", { name: "50" });
-    fireEvent.click(option);
-    // After changing rows per page to 50, we should see 50 items on page
-    // Fund 50 should be visible but Fund 51 should not be on first page
-    expect(screen.getByText("Fund 50")).toBeInTheDocument();
+  it("keeps a wide-screen sort the phone list cannot show", () => {
+    const { rerender } = render(<RankingTable rows={rows} />);
+    fireEvent.click(screen.getByRole("button", { name: "Beta" }));
+    mockMedia("max-width: 639px");
+    rerender(<RankingTable rows={[...rows]} />);
+    expect(screen.getByRole("combobox", { name: "Sort by" })).toHaveValue("rank");
   });
 
-  it("verifies pagination controls render with large datasets", () => {
-    const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-      rank: i + 1,
-      schemeCode: `${1000 + i}`,
-      schemeName: `Fund ${i + 1}`,
-      returns: i * 0.5,
-      isActive: true,
-      metrics: {},
-    }));
-    renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-    // Verify the table displays fund count
-    expect(screen.getByText("1100 funds")).toBeInTheDocument();
-  });
-
-  it("verifies rows per page selector exists with pagination", () => {
-    const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-      rank: i + 1,
-      schemeCode: `${1000 + i}`,
-      schemeName: `Fund ${i + 1}`,
-      returns: i * 0.5,
-      isActive: true,
-      metrics: {},
-    }));
-    renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-    // Verify table is rendered with data
-    expect(screen.getByText("Fund 1")).toBeInTheDocument();
-  });
-
-  it("sorts string columns correctly", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    const nameHeader = screen.getByRole("button", { name: /Fund Name/i });
-    fireEvent.click(nameHeader);
-    expect(screen.getByText("Test Fund Direct Growth")).toBeInTheDocument();
-  });
-
-  it("handles null metrics", () => {
-    const nullMetricsRows = [
-      {
-        rank: 1,
-        schemeCode: "1001",
-        schemeName: "Null Metrics Fund",
-        returns: 10,
-        isActive: true,
-        metrics: null,
-      },
-    ];
-    renderWithProviders(<RankingTable rows={nullMetricsRows} timeframeLabel="1Y" />);
-    expect(screen.getByText("Null Metrics Fund")).toBeInTheDocument();
-  });
-
-  it("handles undefined returns", () => {
-    const undefinedReturnsRows = [
-      {
-        rank: 1,
-        schemeCode: "1001",
-        schemeName: "Undefined Returns Fund",
-        returns: undefined,
-        isActive: true,
-        metrics: {},
-      },
-    ];
-    renderWithProviders(<RankingTable rows={undefinedReturnsRows} timeframeLabel="1Y" />);
-    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
-  });
-
-  it("handles equal return values when sorting", () => {
-    const equalRows = [
-      {
-        rank: 1,
-        schemeCode: "3001",
-        schemeName: "Equal Fund A",
-        returns: 10,
-        isActive: true,
-        metrics: {},
-      },
-      {
-        rank: 2,
-        schemeCode: "3002",
-        schemeName: "Equal Fund B",
-        returns: 10,
-        isActive: true,
-        metrics: {},
-      },
-    ];
-    renderWithProviders(<RankingTable rows={equalRows} timeframeLabel="1Y" />);
-    const returnHeader = screen.getByRole("button", { name: /Return/i });
-    fireEvent.click(returnHeader);
-    expect(screen.getByText("Equal Fund A")).toBeInTheDocument();
-    expect(screen.getByText("Equal Fund B")).toBeInTheDocument();
-  });
-
-  it("sorts numeric values correctly - descending order comparison", () => {
-    const numericRows = [
-      {
-        rank: 1,
-        schemeCode: "1001",
-        schemeName: "A",
-        returns: 5,
-        isActive: true,
-        metrics: { aum: 100 },
-      },
-      {
-        rank: 2,
-        schemeCode: "1002",
-        schemeName: "B",
-        returns: 15,
-        isActive: true,
-        metrics: { aum: 200 },
-      },
-      {
-        rank: 3,
-        schemeCode: "1003",
-        schemeName: "C",
-        returns: 10,
-        isActive: true,
-        metrics: { aum: 300 },
-      },
-    ];
-    renderWithProviders(<RankingTable rows={numericRows} timeframeLabel="1Y" />);
-    // Click to sort by returns descending
-    const returnHeader = screen.getByRole("button", { name: /Return/i });
-    fireEvent.click(returnHeader);
-    fireEvent.click(returnHeader);
-    const rows = screen.getAllByRole("row");
-    expect(rows.length).toBeGreaterThan(1);
-  });
-
-  it("sorts with ascending order comparator", () => {
-    const numericRows = [
-      { rank: 1, schemeCode: "1001", schemeName: "A", returns: 20, isActive: true, metrics: {} },
-      { rank: 2, schemeCode: "1002", schemeName: "B", returns: 5, isActive: true, metrics: {} },
-      { rank: 3, schemeCode: "1003", schemeName: "C", returns: 10, isActive: true, metrics: {} },
-    ];
-    renderWithProviders(<RankingTable rows={numericRows} timeframeLabel="1Y" />);
-    const returnHeader = screen.getByRole("button", { name: /Return/i });
-    fireEvent.click(returnHeader); // ascending
-    const rows = screen.getAllByRole("row");
-    expect(rows.length).toBeGreaterThan(1);
-  });
-
-  it("renders non-sortable column labels without TableSortLabel", () => {
-    renderWithProviders(<RankingTable {...defaultProps} />);
-    // 'Active' column is not sortable - it renders col.label directly (lines 324-325)
-    // Check that the header cells exist
-    const headerCells = screen.getAllByRole("columnheader");
-    expect(headerCells.length).toBeGreaterThan(5);
-    // Find any columnheader that doesn't have a button inside (non-sortable columns)
-    const nonSortableHeaders = headerCells.filter((cell) => !cell.querySelector("button"));
-    // There should be at least one non-sortable column (like 'Active')
-    expect(nonSortableHeaders.length).toBeGreaterThan(0);
-  });
-
-  it("verifies onRowsPerPageChange updates state", () => {
-    const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-      rank: i + 1,
-      schemeCode: `${1000 + i}`,
-      schemeName: `Fund ${i + 1}`,
-      returns: i * 0.5,
-      isActive: true,
-      metrics: {},
-    }));
-    renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-    // Lines 461-463: onRowsPerPageChange sets rowsPerPage and resets page to 0
-    const selects = screen.getAllByRole("combobox");
-    fireEvent.mouseDown(selects[0]);
-    const option100 = screen.getByRole("option", { name: "100" });
-    fireEvent.click(option100);
-    // After changing to 100, Fund 100 should be visible
-    expect(screen.getByText("Fund 100")).toBeInTheDocument();
-    // Reset page to 0 - Fund 1 should still be visible
-    expect(screen.getByText("Fund 1")).toBeInTheDocument();
-  });
-
-  it("handles zero return and alpha without positive/negative classes", () => {
-    const rows = [
-      {
-        rank: 1,
-        schemeCode: "2001",
-        schemeName: "Zero Return Fund",
-        returns: 0,
-        isActive: true,
-        metrics: { alpha: 0 },
-      },
-    ];
-    renderWithProviders(<RankingTable rows={rows} timeframeLabel="1Y" />);
-    const row = screen.getByText("Zero Return Fund").closest("tr");
-    const returnCell = within(row).getByText("0.00%").closest("td");
-    expect(returnCell.className).not.toMatch(/return--positive|return--negative/);
-    const alphaSpan = within(row).getByText("0.00");
-    expect(alphaSpan.className).not.toMatch(/alpha--positive|alpha--negative/);
-  });
-
-  it("formats small AUM values", () => {
-    const rows = [
-      {
-        rank: 1,
-        schemeCode: "2002",
-        schemeName: "Small AUM Fund",
-        returns: 5,
-        isActive: true,
-        metrics: { aum: 450 },
-      },
-    ];
-    renderWithProviders(<RankingTable rows={rows} timeframeLabel="1Y" />);
-    expect(screen.getByText("₹45.0 Cr")).toBeInTheDocument();
-  });
-
-  it("shows dash for NaN AUM values", () => {
-    const rows = [
-      {
-        rank: 1,
-        schemeCode: "2003",
-        schemeName: "Bad AUM Fund",
-        returns: 5,
-        isActive: true,
-        metrics: { aum: "abc" },
-      },
-    ];
-    renderWithProviders(<RankingTable rows={rows} timeframeLabel="1Y" />);
-    const row = screen.getByText("Bad AUM Fund").closest("tr");
-    expect(within(row).getAllByText("—").length).toBeGreaterThan(0);
-  });
-
-  it("sorts AUM with null values without crashing", () => {
-    const rows = [
-      {
-        rank: 1,
-        schemeCode: "2004",
-        schemeName: "Null AUM Fund",
-        returns: 5,
-        isActive: true,
-        metrics: { aum: null },
-      },
-      {
-        rank: 2,
-        schemeCode: "2005",
-        schemeName: "Valid AUM Fund",
-        returns: 6,
-        isActive: true,
-        metrics: { aum: 100 },
-      },
-    ];
-    renderWithProviders(<RankingTable rows={rows} timeframeLabel="1Y" />);
-    const header = screen.getByRole("button", { name: /AUM/i });
-    fireEvent.click(header);
-    expect(screen.getByText("Null AUM Fund")).toBeInTheDocument();
-    expect(screen.getByText("Valid AUM Fund")).toBeInTheDocument();
-  });
-
-  it("verifies onPageChange navigates correctly", () => {
-    const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-      rank: i + 1,
-      schemeCode: `${1000 + i}`,
-      schemeName: `Fund ${i + 1}`,
-      returns: i * 0.5,
-      isActive: true,
-      metrics: {},
-    }));
-    renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-    // Lines 458-459: onPageChange sets page
-    const nextButtons = screen.getAllByRole("button", { name: /next page/i });
-    fireEvent.click(nextButtons[0]); // Go to page 2
-    expect(screen.getByText("Fund 101")).toBeInTheDocument();
-  });
-
-  it("renders mobile cards when media query matches", () => {
-    const originalMatchMedia = window.matchMedia;
-    window.matchMedia = vi.fn().mockImplementation((query) => ({
-      matches: true,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
-
-    try {
-      renderWithProviders(<RankingTable {...defaultProps} />);
-      expect(document.querySelectorAll(".ranking-table__mobile-card").length).toBeGreaterThan(0);
-      expect(screen.queryByRole("columnheader")).not.toBeInTheDocument();
-      expect(screen.getByText("#4")).toBeInTheDocument();
-      const chip = screen.getByText("1");
-      expect(chip.closest(".ranking-table__rank-chip")).toBeInTheDocument();
-    } finally {
-      window.matchMedia = originalMatchMedia;
-    }
-  });
-
-  it("shows mobile empty state when no rows", () => {
-    const originalMatchMedia = window.matchMedia;
-    window.matchMedia = vi.fn().mockImplementation((query) => ({
-      matches: true,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
-
-    try {
-      renderWithProviders(<RankingTable rows={[]} timeframeLabel="1Y" />);
-      expect(screen.getByText("No funds to display.")).toBeInTheDocument();
-    } finally {
-      window.matchMedia = originalMatchMedia;
-    }
-  });
-
-  it("omits bottom pagination on mobile for large datasets", () => {
-    const originalMatchMedia = window.matchMedia;
-    window.matchMedia = vi.fn().mockImplementation((query) => ({
-      matches: true,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
-
-    try {
-      const manyRows = Array.from({ length: 1100 }, (_, i) => ({
-        rank: i + 1,
-        schemeCode: `${1000 + i}`,
-        schemeName: `Fund ${i + 1}`,
-        returns: i * 0.5,
-        isActive: true,
-        metrics: {},
-      }));
-      renderWithProviders(<RankingTable rows={manyRows} timeframeLabel="1Y" />);
-      const paginationElements = document.querySelectorAll(".MuiTablePagination-root");
-      expect(paginationElements.length).toBe(1);
-    } finally {
-      window.matchMedia = originalMatchMedia;
-    }
-  });
-
-  it("handles null metrics in mobile view", () => {
-    const originalMatchMedia = window.matchMedia;
-    window.matchMedia = vi.fn().mockImplementation((query) => ({
-      matches: true,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
-
-    try {
-      const rows = [
-        {
-          rank: 1,
-          schemeCode: "3001",
-          schemeName: "Null Metrics Mobile Fund",
-          returns: 5,
-          isActive: true,
-          metrics: null,
-        },
-      ];
-      renderWithProviders(<RankingTable rows={rows} timeframeLabel="1Y" />);
-      expect(screen.getByText("Null Metrics Mobile Fund")).toBeInTheDocument();
-    } finally {
-      window.matchMedia = originalMatchMedia;
-    }
+  it("pages and handles an empty list", () => {
+    mockMedia("max-width: 639px");
+    const { rerender } = render(<RankingTable rows={many} />);
+    expect(screen.getAllByRole("navigation")).toHaveLength(1);
+    rerender(<RankingTable rows={[]} />);
+    expect(screen.getByText("No funds to show.")).toBeInTheDocument();
   });
 });
