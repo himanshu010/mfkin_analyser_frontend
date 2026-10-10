@@ -1,0 +1,180 @@
+@import "tailwindcss";
+@import "@fontsource/fira-sans/latin-400.css";
+@import "@fontsource/fira-sans/latin-500.css";
+@import "@fontsource/fira-sans/latin-600.css";
+@import "@fontsource/fira-sans/latin-700.css";
+/* All of Fira Code's subsets: "₹" is in latin-ext. */
+@import "@fontsource-variable/fira-code/wght.css";
+
+/* Each theme is a set of tokens on <html data-theme>; text tokens hold 4.5:1 on bg, surface and
+   surface-2 in every theme. */
+@theme inline {
+  --font-sans: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Fira Code Variable", ui-monospace, SFMono-Regular, monospace;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-up-soft: var(--up-soft);
+  --color-down-soft: var(--down-soft);
+  --color-focus: var(--focus);
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-2: #eef2f7;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --fg: #0f172a;
+  --fg-muted: #475569;
+  --fg-faint: #5b6b82;
+  --primary: #1d4ed8;
+  --primary-fg: #ffffff;
+  --primary-soft: #dbeafe;
+  --accent: #f59e0b;
+  --accent-text: #92400e;
+  --accent-soft: #fef3c7;
+  --up: #036c4f;
+  --down: #b91c1c;
+  --up-soft: #d1fae5;
+  --down-soft: #fee2e2;
+  --focus: #2563eb;
+  --glow-1: #3b82f6;
+  --glow-2: #f59e0b;
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07111f;
+  --surface: #0c192b;
+  --surface-2: #132339;
+  --line: #1c2e48;
+  --line-strong: #2a4163;
+  --fg: #e6edf7;
+  --fg-muted: #a3b3c9;
+  --fg-faint: #8a9bb3;
+  --primary: #60a5fa;
+  --primary-fg: #04111f;
+  --primary-soft: rgb(96 165 250 / 0.14);
+  --accent: #fbbf24;
+  --accent-text: #fbbf24;
+  --accent-soft: rgb(251 191 36 / 0.12);
+  --up: #34d399;
+  --down: #f87171;
+  --up-soft: rgb(52 211 153 / 0.12);
+  --down-soft: rgb(248 113 113 / 0.12);
+  --focus: #93c5fd;
+  --glow-1: #3b82f6;
+  --glow-2: #22d3ee;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+}
+
+[data-theme="funky"] {
+  color-scheme: dark;
+  --bg: #110a22;
+  --surface: #1b1135;
+  --surface-2: #251845;
+  --line: #34255c;
+  --line-strong: #4a387d;
+  --fg: #f7f3ff;
+  --fg-muted: #cfc3f2;
+  --fg-faint: #ae9edb;
+  --primary: #f5b83d;
+  --primary-fg: #1d1200;
+  --primary-soft: rgb(245 184 61 / 0.14);
+  --accent: #e879f9;
+  --accent-text: #f0abfc;
+  --accent-soft: rgb(232 121 249 / 0.14);
+  --up: #4ade80;
+  --down: #fb8da0;
+  --up-soft: rgb(74 222 128 / 0.12);
+  --down-soft: rgb(251 141 160 / 0.12);
+  --focus: #f5b83d;
+  --glow-1: #8b5cf6;
+  --glow-2: #ec4899;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 16px 40px -18px rgb(139 92 246 / 0.45);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+  }
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+    font-feature-settings: "tnum";
+    transition: background-color 0.3s ease;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary {
+    cursor: pointer;
+  }
+}
+
+/* Numbers in tables and tiles line up when every digit has the same width. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-variant-ligatures: none;
+}
+
+.card {
+  @apply rounded-2xl border border-line bg-surface;
+  box-shadow: var(--shadow);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+/* SearchField draws its own clear button. */
+input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes indeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

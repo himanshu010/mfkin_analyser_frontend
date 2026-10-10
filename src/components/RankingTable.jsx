@@ -1,218 +1,133 @@
-import { useState, useMemo, useEffect } from "react";
-import {
-  Box,
-  Chip,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  TablePagination,
-  Tooltip,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { formatAum, formatNumber, formatPercent, formatReturn, trend } from "../lib/format.js";
+import { cn } from "../lib/cn.js";
+import { PHONE, useMediaQuery } from "../lib/useMediaQuery.js";
+import Button from "./ui/Button.jsx";
 
-// Format return value as percentage with 2 decimal places
-const formatReturn = (value) =>
-  value === null || value === undefined ? "—" : `${value.toFixed(2)}%`;
+export { formatPercent };
 
-// Format numeric value with specified decimal places
-const formatNumber = (value, decimals = 2) =>
-  value === null || value === undefined ? "—" : Number(value).toFixed(decimals);
-
-// Format AUM in Indian notation (Crores)
-// Input is in 10s of crores, so divide by 10 to get crores
-const formatAum = (value) => {
-  if (value === null || value === undefined) return "—";
-  const num = Number(value);
-  if (Number.isNaN(num)) return "—";
-  const crores = num / 10;
-  if (crores >= 1000) return `₹${(crores / 1000).toFixed(1)}K Cr`;
-  if (crores >= 100) return `₹${crores.toFixed(0)} Cr`;
-  return `₹${crores.toFixed(1)} Cr`;
-};
-
-// Format value as percentage
-export const formatPercent = (value) => {
-  if (value === null || value === undefined) return "—";
-  return `${Number(value).toFixed(2)}%`;
-};
-
-// Enable pagination only for very large datasets (eg: "All Funds" with 1000+ entries)
+// Pagination only for very large lists (eg "All Funds" with 1,000+ entries).
 const PAGINATION_THRESHOLD = 1000;
+const PAGE_SIZES = [50, 100, 250, 500];
 
-// Table column definitions with sorting, width, and sticky positioning
+const tone = { up: "text-up", down: "text-down", flat: "" };
+const dash = (value) => value || "—";
+
+// accessorKey reads from row.metrics; the rest read from the row. `render(metrics, row)` gives the cell.
 const columns = [
-  {
-    id: "rank",
-    label: "#",
-    align: "center",
-    sortable: true,
-    sticky: true,
-    cellClass: "ranking-table__cell--rank",
-  },
-  {
-    id: "schemeName",
-    label: "Fund Name",
-    align: "left",
-    sortable: true,
-    sticky: true,
-    cellClass: "ranking-table__cell--name",
-  },
-  {
-    id: "returns",
-    label: "Return",
-    align: "right",
-    sortable: true,
-    sticky: true,
-    cellClass: "ranking-table__cell--return",
-  },
-  {
-    id: "aum",
-    label: "AUM",
-    align: "right",
-    sortable: true,
-    sticky: true,
-    cellClass: "ranking-table__cell--aum",
-    accessorKey: "aum",
-  },
-  {
-    id: "isActive",
-    label: "Status",
-    align: "center",
-    sortable: false,
-    cellClass: "ranking-table__cell--status",
-  },
+  { id: "rank", label: "#", align: "center" },
+  { id: "schemeName", label: "Fund", align: "left" },
+  { id: "returns", label: "Return", align: "right", render: (m, row) => formatReturn(row.returns) },
+  { id: "aum", label: "AUM", align: "right", accessorKey: "aum", render: (m) => formatAum(m.aum) },
+  { id: "isActive", label: "Status", align: "center", sortable: false },
   {
     id: "expenseRatio",
     label: "Expense",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--expense",
     accessorKey: "expenseRatio",
+    render: (m) => formatPercent(m.expenseRatio),
   },
   {
     id: "category",
     label: "Category",
-    align: "center",
-    sortable: true,
-    cellClass: "ranking-table__cell--category",
+    align: "left",
     accessorKey: "category",
+    render: (m) => dash(m.category),
   },
   {
     id: "peRatio",
     label: "P/E",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--pe",
     accessorKey: "peRatio",
+    render: (m) => formatNumber(m.peRatio, 1),
   },
   {
     id: "pbRatio",
     label: "P/B",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--pb",
     accessorKey: "pbRatio",
+    render: (m) => formatNumber(m.pbRatio, 1),
   },
   {
     id: "dividendYield",
-    label: "Div Yld",
+    label: "Div yield",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--dividend",
     accessorKey: "dividendYield",
+    render: (m) => formatPercent(m.dividendYield),
   },
   {
     id: "turnoverRatio",
     label: "Turnover",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--turnover",
     accessorKey: "turnoverRatio",
+    render: (m) => formatNumber(m.turnoverRatio, 2),
   },
   {
     id: "sharpeRatio",
     label: "Sharpe",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--sharpe",
     accessorKey: "sharpeRatio",
+    render: (m) => formatNumber(m.sharpeRatio, 2),
   },
   {
     id: "alpha",
     label: "Alpha",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--alpha",
     accessorKey: "alpha",
+    render: (m) => formatNumber(m.alpha, 2),
+    tone: (m) => tone[trend(m.alpha)],
   },
   {
     id: "beta",
     label: "Beta",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--beta",
     accessorKey: "beta",
+    render: (m) => formatNumber(m.beta, 2),
   },
   {
     id: "stdDev",
-    label: "Std Dev",
+    label: "Std dev",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--stddev",
     accessorKey: "standardDeviation",
+    render: (m) => formatNumber(m.standardDeviation, 2),
   },
   {
     id: "sortinoRatio",
     label: "Sortino",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--sortino",
     accessorKey: "sortinoRatio",
+    render: (m) => formatNumber(m.sortinoRatio, 2),
   },
   {
     id: "treynorRatio",
     label: "Treynor",
     align: "right",
-    sortable: true,
-    cellClass: "ranking-table__cell--treynor",
     accessorKey: "treynorRatio",
+    render: (m) => formatNumber(m.treynorRatio, 2),
   },
   {
     id: "riskRating",
     label: "Risk",
-    align: "center",
-    sortable: true,
-    cellClass: "ranking-table__cell--risk",
+    align: "left",
     accessorKey: "riskRating",
+    render: (m) => dash(m.riskRating),
   },
   {
     id: "inceptionDate",
-    label: "Inception",
-    align: "center",
-    sortable: true,
-    cellClass: "ranking-table__cell--inception",
+    label: "Since",
+    align: "left",
     accessorKey: "inceptionDate",
+    render: (m) => dash(m.inceptionDate),
   },
 ];
 
-// Get sortable value from row using column accessor or direct property
 const getSortValue = (row, columnId) => {
   const column = columns.find((c) => c.id === columnId);
-  if (column?.accessorKey) {
-    return row.metrics?.[column.accessorKey];
-  }
-  return row[columnId];
+  return column?.accessorKey ? row.metrics?.[column.accessorKey] : row[columnId];
 };
 
-// Comparator for descending sort order, handles null values
+// Descending comparison; missing values always sort last.
 export const descendingComparator = (a, b, orderBy) => {
   const aVal = getSortValue(a, orderBy);
   const bVal = getSortValue(b, orderBy);
@@ -227,371 +142,382 @@ export const descendingComparator = (a, b, orderBy) => {
   return 0;
 };
 
-// Get comparator function based on sort order
-const getComparator = (order, orderBy) =>
-  order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+const compare = (order, orderBy) => (a, b) => {
+  const result = descendingComparator(a, b, orderBy);
+  // Missing values stay last in both directions.
+  const missing = [a, b].some(
+    (row) => getSortValue(row, orderBy) === null || getSortValue(row, orderBy) === undefined
+  );
+  return order === "desc" || missing ? result : -result;
+};
 
-const RankingTable = ({ rows, timeframeLabel, note }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+const medal = [
+  "bg-accent text-[#1d1200]",
+  "bg-line-strong text-fg",
+  "bg-accent-soft text-accent-text",
+];
+
+const Status = ({ active }) => (
+  <span
+    className={cn(
+      "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
+      active ? "bg-up-soft text-up" : "bg-surface-2 text-fg-muted"
+    )}
+  >
+    {active ? "Active" : "Inactive"}
+  </span>
+);
+
+const Rank = ({ rank }) =>
+  rank <= 3 ? (
+    <span
+      className={cn(
+        "num inline-grid size-7 place-items-center rounded-full text-xs font-bold",
+        medal[rank - 1]
+      )}
+    >
+      {rank}
+    </span>
+  ) : (
+    <span className="num text-fg-muted">{rank}</span>
+  );
+
+const Pagination = ({ label, page, pages, total, pageSize, onPage, onPageSize }) => (
+  <nav
+    aria-label={label}
+    className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3 text-sm"
+  >
+    <label className="flex items-center gap-2 text-fg-muted">
+      Rows per page
+      <select
+        className="h-9 rounded-lg border border-line bg-surface px-2 text-fg pointer-coarse:h-11 pointer-coarse:text-base"
+        onChange={(event) => onPageSize(Number(event.target.value))}
+        value={pageSize}
+      >
+        {PAGE_SIZES.map((size) => (
+          <option key={size} value={size}>
+            {size}
+          </option>
+        ))}
+      </select>
+    </label>
+    <div className="flex items-center gap-2">
+      <span className="num text-fg-muted">
+        {page * pageSize + 1}–{Math.min(total, (page + 1) * pageSize)} of {total}
+      </span>
+      <Button
+        aria-label="Previous page"
+        disabled={page === 0}
+        onClick={() => onPage(page - 1)}
+        size="icon"
+        variant="outline"
+      >
+        <ChevronLeft aria-hidden />
+      </Button>
+      <Button
+        aria-label="Next page"
+        disabled={page >= pages - 1}
+        onClick={() => onPage(page + 1)}
+        size="icon"
+        variant="outline"
+      >
+        <ChevronRight aria-hidden />
+      </Button>
+    </div>
+  </nav>
+);
+
+const phoneSorts = [
+  { id: "rank", label: "Rank" },
+  { id: "returns", label: "Return" },
+  { id: "aum", label: "AUM" },
+  { id: "expenseRatio", label: "Expense" },
+  { id: "sharpeRatio", label: "Sharpe" },
+];
+
+const RankingTable = ({ rows, timeframeLabel, note, highlightCode }) => {
+  const phone = useMediaQuery(PHONE);
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("rank");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(100);
+  const [pageSize, setPageSize] = useState(100);
+  const highlighted = useRef(null);
+  const scroller = useRef(null);
 
   const safeRows = useMemo(() => rows || [], [rows]);
-  const usePagination = safeRows.length > PAGINATION_THRESHOLD;
+  const paginate = safeRows.length > PAGINATION_THRESHOLD;
+  const pages = Math.ceil(safeRows.length / pageSize);
 
-  const handlePageChange = (_, nextPage) => setPage(nextPage);
+  useEffect(() => setPage(0), [safeRows.length]);
 
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+  const sorted = useMemo(
+    () => [...safeRows].sort(compare(order, orderBy)),
+    [safeRows, order, orderBy]
+  );
+  const shown = paginate ? sorted.slice(page * pageSize, page * pageSize + pageSize) : sorted;
 
-  // Toggle sort order or change sort column
-  const handleSort = (columnId) => {
+  // Brings a searched fund's row into the middle of the table's own scroll area, leaving the page
+  // (and the fund spotlight at its top) where it is.
+  useEffect(() => {
+    const row = highlighted.current;
+    const area = scroller.current;
+    if (!row || !area) return;
+    area.scrollTo?.({
+      top: row.offsetTop - (area.clientHeight - row.offsetHeight) / 2,
+      behavior: "smooth",
+    });
+  }, [highlightCode]);
+
+  const sortBy = (columnId) => {
     const isAsc = orderBy === columnId && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(columnId);
     setPage(0);
   };
 
-  const sortedRows = useMemo(
-    () => [...safeRows].sort(getComparator(order, orderBy)),
-    [safeRows, order, orderBy]
-  );
-
-  // Apply pagination if enabled
-  const displayRows = useMemo(() => {
-    if (!usePagination) return sortedRows;
-    return sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-  }, [sortedRows, page, rowsPerPage, usePagination]);
-
-  // Reset to first page when data changes
-  useEffect(() => setPage(0), [safeRows.length]);
-
-  // Get return color class based on value
-  const getReturnClass = (value) => {
-    if (value > 0) return "ranking-table__return--positive";
-    if (value < 0) return "ranking-table__return--negative";
-    return "";
-  };
-
-  // Get alpha color class based on value
-  const getAlphaClass = (value) => {
-    if (value > 0) return "ranking-table__alpha--positive";
-    if (value < 0) return "ranking-table__alpha--negative";
-    return "";
-  };
+  const pagination = (label) =>
+    paginate ? (
+      <Pagination
+        label={label}
+        onPage={setPage}
+        onPageSize={(size) => {
+          setPageSize(size);
+          setPage(0);
+        }}
+        page={page}
+        pageSize={pageSize}
+        pages={pages}
+        total={safeRows.length}
+      />
+    ) : null;
 
   return (
-    <Paper elevation={0} className="ranking-table">
-      <Box className="ranking-table__header">
-        <Box>
-          <Typography variant="h3">Full Ranking</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {timeframeLabel || "—"} returns • Click headers to sort
-            {usePagination && ` • Page ${page + 1} of ${Math.ceil(safeRows.length / rowsPerPage)}`}
-          </Typography>
-        </Box>
-        <Chip label={`${safeRows.length} funds`} size="small" />
-      </Box>
+    <section aria-labelledby="ranking-title" className="card overflow-hidden">
+      <div className="flex flex-wrap items-end justify-between gap-3 px-4 pt-4 pb-3 sm:px-5">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight" id="ranking-title">
+            Full ranking
+          </h2>
+          <p className="text-sm text-fg-muted">
+            {timeframeLabel || "—"} returns ·{" "}
+            {phone ? "choose how to sort below" : "select a column to sort"}
+          </p>
+        </div>
+        <span className="num rounded-full border border-line bg-surface-2 px-3 py-1 text-sm">
+          {safeRows.length} funds
+        </span>
+      </div>
 
-      {usePagination && (
-        <TablePagination
-          component="div"
-          count={safeRows.length}
-          page={page}
-          onPageChange={handlePageChange}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleRowsPerPageChange}
-          rowsPerPageOptions={[50, 100, 250, 500]}
-          className="ranking-table__pagination"
-        />
-      )}
-
-      {isMobile ? (
-        <Box className="ranking-table__mobile-list">
-          {displayRows.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              No funds to display.
-            </Typography>
-          ) : (
-            displayRows.map((row) => {
-              const m = row.metrics || {};
-              const isTop3 = row.rank <= 3;
-              const expenseRatio =
-                m.expenseRatio !== null && m.expenseRatio !== undefined
-                  ? formatPercent(m.expenseRatio)
-                  : "—";
-
-              return (
-                <Paper
-                  key={`${row.schemeCode}-${row.rank}`}
-                  elevation={0}
-                  className={`ranking-table__mobile-card ${isTop3 ? "ranking-table__mobile-card--top" : ""}`}
-                >
-                  <Stack spacing={1}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      className="ranking-table__mobile-header"
-                    >
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        {isTop3 ? (
-                          <Chip
-                            label={row.rank}
-                            size="small"
-                            className="ranking-table__rank-chip"
-                          />
-                        ) : (
-                          <Typography variant="subtitle2" className="ranking-table__mobile-rank">
-                            #{row.rank}
-                          </Typography>
-                        )}
-                        <Typography
-                          variant="subtitle2"
-                          className={`ranking-table__mobile-return ${getReturnClass(row.returns)}`}
-                        >
-                          {formatReturn(row.returns)}
-                        </Typography>
-                      </Stack>
-                      <Chip
-                        label={row.isActive ? "Active" : "Inactive"}
-                        size="small"
-                        className={`ranking-table__status-chip ${row.isActive ? "ranking-table__status-chip--active" : "ranking-table__status-chip--inactive"}`}
-                      />
-                    </Stack>
-
-                    <Box>
-                      <Typography variant="subtitle2" className="ranking-table__mobile-name">
-                        {row.schemeName}
-                      </Typography>
-                      {m.fundManager && (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          className="ranking-table__fund-manager"
-                        >
-                          {m.fundManager}
-                        </Typography>
-                      )}
-                    </Box>
-
-                    <Box className="ranking-table__mobile-metrics">
-                      <Box className="ranking-table__mobile-metric">
-                        <Typography variant="caption" color="text.secondary">
-                          AUM
-                        </Typography>
-                        <Typography variant="body2">{formatAum(m.aum)}</Typography>
-                      </Box>
-                      <Box className="ranking-table__mobile-metric">
-                        <Typography variant="caption" color="text.secondary">
-                          Expense
-                        </Typography>
-                        <Typography variant="body2">{expenseRatio}</Typography>
-                      </Box>
-                      <Box className="ranking-table__mobile-metric">
-                        <Typography variant="caption" color="text.secondary">
-                          Category
-                        </Typography>
-                        <Typography variant="body2" noWrap>
-                          {m.category || "—"}
-                        </Typography>
-                      </Box>
-                      <Box className="ranking-table__mobile-metric">
-                        <Typography variant="caption" color="text.secondary">
-                          Risk
-                        </Typography>
-                        <Typography variant="body2" noWrap>
-                          {m.riskRating || "—"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Stack>
-                </Paper>
-              );
-            })
-          )}
-        </Box>
-      ) : (
-        <TableContainer
-          className={`ranking-table__container ${usePagination ? "ranking-table__container--paginated" : "ranking-table__container--full"}`}
-        >
-          <Table size="small" stickyHeader className="ranking-table__table">
-            <TableHead className="ranking-table__head">
-              <TableRow>
-                {columns.map((col) => (
-                  <TableCell
-                    key={col.id}
-                    align={col.align}
-                    className={`${col.cellClass} ${col.sticky ? "ranking-table__cell--sticky" : ""} ${col.sortable ? "ranking-table__cell--sortable" : ""}`}
-                    sortDirection={orderBy === col.id ? order : false}
-                  >
-                    {col.sortable ? (
-                      <TableSortLabel
-                        active={orderBy === col.id}
-                        direction={orderBy === col.id ? order : "asc"}
-                        onClick={() => handleSort(col.id)}
-                      >
-                        {col.label}
-                      </TableSortLabel>
-                    ) : (
-                      col.label
-                    )}
-                  </TableCell>
+      {phone ? (
+        <>
+          <div className="flex items-center gap-2 border-t border-line px-4 py-3">
+            <label className="flex flex-1 items-center gap-2 text-sm text-fg-muted">
+              Sort by
+              <select
+                className="h-11 flex-1 rounded-lg border border-line bg-surface px-2 text-base text-fg"
+                onChange={(event) => {
+                  setOrderBy(event.target.value);
+                  setPage(0);
+                }}
+                value={phoneSorts.some((sort) => sort.id === orderBy) ? orderBy : "rank"}
+              >
+                {phoneSorts.map((sort) => (
+                  <option key={sort.id} value={sort.id}>
+                    {sort.label}
+                  </option>
                 ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {displayRows.map((row) => {
+              </select>
+            </label>
+            <Button
+              aria-label={
+                order === "asc"
+                  ? "Ascending; switch to descending"
+                  : "Descending; switch to ascending"
+              }
+              onClick={() => setOrder(order === "asc" ? "desc" : "asc")}
+              size="icon"
+              variant="outline"
+            >
+              {order === "asc" ? <ArrowUp aria-hidden /> : <ArrowDown aria-hidden />}
+            </Button>
+          </div>
+          {pagination("Ranking pages")}
+          {shown.length === 0 ? (
+            <p className="border-t border-line px-4 py-6 text-sm text-fg-muted">
+              No funds to show.
+            </p>
+          ) : (
+            <ol className="divide-y divide-line border-t border-line">
+              {shown.map((row) => {
                 const m = row.metrics || {};
-                const isTop3 = row.rank <= 3;
-                const bgClass = isTop3 ? "ranking-table__bg--top" : "ranking-table__bg--white";
-                const rowClass = `ranking-table__row ${isTop3 ? "ranking-table__row--top-rank" : ""}`;
-
+                const mark = row.schemeCode === highlightCode;
                 return (
-                  <TableRow key={`${row.schemeCode}-${row.rank}`} className={rowClass}>
-                    <TableCell
-                      align="center"
-                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--rank ${bgClass}`}
-                    >
-                      {isTop3 ? (
-                        <Chip label={row.rank} size="small" className="ranking-table__rank-chip" />
-                      ) : (
-                        row.rank
-                      )}
-                    </TableCell>
-                    <TableCell
-                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--name ${bgClass}`}
-                    >
-                      <Tooltip
-                        title={`${row.schemeName}${m.fundManager ? ` • ${m.fundManager}` : ""}`}
-                        placement="top-start"
-                      >
-                        <Box>
-                          <Typography variant="body2" className="ranking-table__fund-name">
-                            {row.schemeName}
-                          </Typography>
-                          {m.fundManager && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              className="ranking-table__fund-manager"
-                            >
-                              {m.fundManager}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--return ${bgClass} ${getReturnClass(row.returns)}`}
-                    >
-                      {formatReturn(row.returns)}
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      className={`ranking-table__body-cell--sticky ranking-table__body-cell--aum ${bgClass}`}
-                    >
-                      {formatAum(m.aum)}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Chip
-                        label={row.isActive ? "Active" : "Inactive"}
-                        size="small"
-                        className={`ranking-table__status-chip ${row.isActive ? "ranking-table__status-chip--active" : "ranking-table__status-chip--inactive"}`}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      {m.expenseRatio !== null && m.expenseRatio !== undefined
-                        ? formatPercent(m.expenseRatio)
-                        : "—"}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="caption" noWrap>
-                        {m.category || "—"}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="right">{formatNumber(m.peRatio, 1)}</TableCell>
-                    <TableCell align="right">{formatNumber(m.pbRatio, 1)}</TableCell>
-                    <TableCell align="right">
-                      {m.dividendYield !== null && m.dividendYield !== undefined
-                        ? formatPercent(m.dividendYield)
-                        : "—"}
-                    </TableCell>
-                    <TableCell align="right">{formatNumber(m.turnoverRatio, 2)}</TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Sharpe Ratio">
-                        <span>{formatNumber(m.sharpeRatio, 2)}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Alpha">
-                        <span className={getAlphaClass(m.alpha)}>{formatNumber(m.alpha, 2)}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Beta">
-                        <span>{formatNumber(m.beta, 2)}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Standard Deviation">
-                        <span>{formatNumber(m.standardDeviation, 2)}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Sortino Ratio">
-                        <span>{formatNumber(m.sortinoRatio, 2)}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Treynor Ratio">
-                        <span>{formatNumber(m.treynorRatio, 2)}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="caption" noWrap>
-                        {m.riskRating || "—"}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="caption" noWrap>
-                        {m.inceptionDate || "—"}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
+                  <li
+                    className={cn("px-4 py-3", mark && "bg-primary-soft")}
+                    key={`${row.schemeCode}-${row.rank}`}
+                    ref={mark ? highlighted : null}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Rank rank={row.rank} />
+                        <span className={cn("num font-semibold", tone[trend(row.returns)])}>
+                          {formatReturn(row.returns)}
+                        </span>
+                      </div>
+                      <Status active={row.isActive} />
+                    </div>
+                    <p className="mt-1.5 font-medium">{row.schemeName}</p>
+                    {m.fundManager ? (
+                      <p className="text-xs text-fg-muted">{m.fundManager}</p>
+                    ) : null}
+                    <dl className="mt-2 grid grid-cols-4 gap-2 text-sm">
+                      {[
+                        ["AUM", formatAum(m.aum)],
+                        ["Expense", formatPercent(m.expenseRatio)],
+                        ["Sharpe", formatNumber(m.sharpeRatio, 2)],
+                        ["Risk", dash(m.riskRating)],
+                      ].map(([label, value]) => (
+                        <div className="min-w-0" key={label}>
+                          <dt className="text-xs text-fg-muted">{label}</dt>
+                          <dd className="num truncate">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </li>
                 );
               })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+            </ol>
+          )}
+        </>
+      ) : (
+        <>
+          {pagination("Ranking pages")}
+          <div
+            className="scrollbar-thin max-h-[75vh] overflow-auto border-t border-line"
+            tabIndex={0}
+            role="region"
+            aria-label="Ranking table, scrolls in both directions"
+            ref={scroller}
+          >
+            <table className="w-full border-separate border-spacing-0 text-sm">
+              <thead>
+                <tr>
+                  {columns.map((col, index) => {
+                    const sortable = col.sortable !== false;
+                    const active = orderBy === col.id;
+                    const Icon = active ? (order === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+                    return (
+                      <th
+                        aria-sort={
+                          active ? (order === "asc" ? "ascending" : "descending") : undefined
+                        }
+                        className={cn(
+                          "sticky top-0 z-10 border-b border-line bg-surface-2 px-3 py-2.5 font-medium whitespace-nowrap text-fg-muted",
+                          col.align === "right"
+                            ? "text-right"
+                            : col.align === "center"
+                              ? "text-center"
+                              : "text-left",
+                          index === 0 && "left-0 z-20 w-14",
+                          index === 1 && "left-14 z-20 min-w-[16rem] border-r"
+                        )}
+                        key={col.id}
+                        scope="col"
+                      >
+                        {sortable ? (
+                          <button
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded hover:text-fg",
+                              active && "text-fg",
+                              col.align === "right" && "flex-row-reverse"
+                            )}
+                            onClick={() => sortBy(col.id)}
+                            type="button"
+                          >
+                            {col.label}
+                            <Icon aria-hidden className={cn("size-3.5", !active && "opacity-50")} />
+                          </button>
+                        ) : (
+                          col.label
+                        )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((row) => {
+                  const m = row.metrics || {};
+                  const mark = row.schemeCode === highlightCode;
+                  const stickyBg = mark ? "bg-primary-soft" : "bg-surface group-hover:bg-surface-2";
+                  return (
+                    <tr
+                      className={cn("group", mark && "bg-primary-soft")}
+                      key={`${row.schemeCode}-${row.rank}`}
+                      ref={mark ? highlighted : null}
+                    >
+                      <td
+                        className={cn(
+                          "sticky left-0 border-b border-line px-3 py-2 text-center",
+                          stickyBg
+                        )}
+                      >
+                        <Rank rank={row.rank} />
+                      </td>
+                      <th
+                        className={cn(
+                          "sticky left-14 max-w-[22rem] border-r border-b border-line px-3 py-2 text-left font-normal",
+                          stickyBg
+                        )}
+                        scope="row"
+                      >
+                        <span className="line-clamp-2 font-medium" title={row.schemeName}>
+                          {row.schemeName}
+                        </span>
+                        {m.fundManager ? (
+                          <span className="block truncate text-xs text-fg-muted">
+                            {m.fundManager}
+                          </span>
+                        ) : null}
+                      </th>
+                      {columns.slice(2).map((col) => (
+                        <td
+                          className={cn(
+                            "border-b border-line px-3 py-2 whitespace-nowrap group-hover:bg-surface-2",
+                            col.align === "right"
+                              ? "num text-right"
+                              : col.align === "center"
+                                ? "text-center"
+                                : "text-left",
+                            col.id === "returns" && cn("font-semibold", tone[trend(row.returns)]),
+                            col.tone?.(m)
+                          )}
+                          key={col.id}
+                        >
+                          {col.id === "isActive" ? (
+                            <Status active={row.isActive} />
+                          ) : (
+                            col.render(m, row)
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {shown.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-fg-muted">No funds to show.</p>
+            ) : null}
+          </div>
+        </>
       )}
 
-      {usePagination && !isMobile && (
-        <TablePagination
-          component="div"
-          count={safeRows.length}
-          page={page}
-          onPageChange={handlePageChange}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleRowsPerPageChange}
-          rowsPerPageOptions={[50, 100, 250, 500]}
-        />
-      )}
-
-      {note && (
-        <Typography variant="caption" color="text.secondary" className="ranking-table__note">
-          {note}
-        </Typography>
-      )}
-    </Paper>
+      {phone ? null : pagination("Ranking pages, bottom")}
+      {note ? (
+        <p className="border-t border-line px-4 py-3 text-xs text-fg-muted sm:px-5">{note}</p>
+      ) : null}
+    </section>
   );
 };
 

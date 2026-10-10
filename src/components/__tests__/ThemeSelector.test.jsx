@@ -1,55 +1,25 @@
-import { describe, it, expect } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import ThemeSelector from "../ThemeSelector";
 import { renderWithProviders } from "../../test/testUtils";
 
 describe("ThemeSelector", () => {
-  it("renders all theme options", () => {
-    renderWithProviders(<ThemeSelector />);
-    expect(screen.getByRole("button", { name: "Light" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Funky" })).toBeInTheDocument();
+  it("offers the three themes with the current one checked", () => {
+    renderWithProviders(<ThemeSelector />, { preloadedState: { theme: { current: "light" } } });
+    expect(screen.getByRole("radiogroup", { name: "Theme" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Light" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "Dark" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("radio", { name: "Funky" })).toBeInTheDocument();
   });
 
-  it("has light theme selected by default", () => {
-    renderWithProviders(<ThemeSelector />);
-    const lightButton = screen.getByRole("button", { name: "Light" });
-    expect(lightButton).toHaveAttribute("aria-pressed", "true");
-  });
-
-  it("changes theme when clicking dark button", () => {
-    const { store } = renderWithProviders(<ThemeSelector />);
-    const darkButton = screen.getByRole("button", { name: "Dark" });
-    fireEvent.click(darkButton);
-    expect(store.getState().theme.current).toBe("dark");
-  });
-
-  it("changes theme when clicking funky button", () => {
-    const { store } = renderWithProviders(<ThemeSelector />);
-    const funkyButton = screen.getByRole("button", { name: "Funky" });
-    fireEvent.click(funkyButton);
+  it("switches and remembers the theme", () => {
+    const { store } = renderWithProviders(<ThemeSelector />, {
+      preloadedState: { theme: { current: "light" } },
+    });
+    fireEvent.click(screen.getByRole("radio", { name: "Funky" }));
     expect(store.getState().theme.current).toBe("funky");
-  });
-
-  it("does not change theme when clicking already selected", () => {
-    const { store } = renderWithProviders(<ThemeSelector />);
-    const lightButton = screen.getByRole("button", { name: "Light" });
-    fireEvent.click(lightButton);
+    expect(localStorage.getItem("theme")).toBe("funky");
+    fireEvent.keyDown(screen.getByRole("radio", { name: "Funky" }), { key: "ArrowRight" });
     expect(store.getState().theme.current).toBe("light");
-  });
-
-  it("renders LightModeIcon", () => {
-    renderWithProviders(<ThemeSelector />);
-    expect(screen.getByTestId("LightModeIcon")).toBeInTheDocument();
-  });
-
-  it("renders DarkModeIcon", () => {
-    renderWithProviders(<ThemeSelector />);
-    expect(screen.getByTestId("DarkModeIcon")).toBeInTheDocument();
-  });
-
-  it("renders AutoAwesomeIcon", () => {
-    renderWithProviders(<ThemeSelector />);
-    expect(screen.getByTestId("AutoAwesomeIcon")).toBeInTheDocument();
   });
 });

@@ -1,12 +1,10 @@
 import { render } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
+import { vi } from "vitest";
 import sectorsReducer from "../features/sectors/sectorSlice";
 import fundsReducer from "../features/funds/fundSlice";
 import themeReducer from "../features/theme/themeSlice";
-import { lightTheme } from "../theme/theme";
 
 export const createTestStore = (preloadedState = {}) => {
   return configureStore({
@@ -21,23 +19,20 @@ export const createTestStore = (preloadedState = {}) => {
 
 export const renderWithProviders = (
   ui,
-  {
-    preloadedState = {},
-    store = createTestStore(preloadedState),
-    theme = lightTheme,
-    ...renderOptions
-  } = {}
+  { preloadedState = {}, store = createTestStore(preloadedState), ...renderOptions } = {}
 ) => {
-  const Wrapper = ({ children }) => (
-    <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
-    </Provider>
-  );
-
+  const Wrapper = ({ children }) => <Provider store={store}>{children}</Provider>;
   return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
+};
+
+// Makes window.matchMedia answer `matches` for queries containing `text` (eg the phone breakpoint).
+export const mockMedia = (text, matches = true) => {
+  window.matchMedia.mockImplementation((query) => ({
+    matches: query.includes(text) ? matches : false,
+    media: query,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
 };
 
 export const mockSectorRanking = {
